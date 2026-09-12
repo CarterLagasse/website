@@ -571,7 +571,8 @@ function renderLS(node) {
     let html = `<div class="ls">`;
     for (const name of entries) {
         const val = node[name];
-        const cls = isDir(name) ? "dir" : (val && typeof val === "object" && val._link ? "link" : "file");
+        const isLink = val && typeof val === "object" && val._link;
+        const cls = isLink ? "link" : isDir(name) ? "dir" : "file";
         html += `<a class="item ${cls}" data-name="${name}" tabindex="0">${name}</a>`;
     }
     html += `</div>`;
@@ -1004,7 +1005,7 @@ function bindClicks(root) {
             const name = el.dataset.name;
             const node = getNode(cwd);
             const val = node ? node[name] : null;
-            if (val && val._link && !isDir(name)) {
+            if (val && val._link) {
                 execCommand(`open "${name}"`);
             } else if (isDir(name)) {
                 execCommand(`cd ${name}`);
