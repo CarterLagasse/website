@@ -294,18 +294,19 @@
         .ascii {
             color: var(--vs-text);
             font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
-            font-size: 12px;
-            line-height: 1.25;
-            margin: 0 0 16px;
+            font-size: 11px;
+            line-height: 1.1;
+            margin: 0 0 14px;
             overflow-x: auto;
             white-space: pre;
             letter-spacing: 0;
             word-spacing: 0;
-            font-weight: 500;
+            font-weight: 400;
             font-variant-ligatures: none;
             font-feature-settings: normal;
             text-rendering: geometricPrecision;
             display: block;
+            text-align: left;
         }
         .ascii .hl {
             color: var(--vs-text);
@@ -507,11 +508,6 @@
     </style>
 </head>
 <body>
-    <div class="page-header">
-        <h1>Portfolio — 2026</h1>
-        <div class="name">Carter Lagasse <span>· software developer</span></div>
-    </div>
-
     <div class="vscode">
         <div class="panel-header">
             <div class="panel-left">
@@ -540,8 +536,7 @@ const FS = {
             "connect/": {
                 "github": { _link: "https://github.com/CarterLagasse", _desc: "github.com/CarterLagasse" },
                 "linkedin": { _link: "https://www.linkedin.com/in/carter-lagasse/", _desc: "linkedin.com/in/carter-lagasse" },
-                "email": { _link: "mailto:carter.lagasse@gmail.com", _desc: "carter.lagasse@gmail.com" },
-                "resume.pdf": { _link: "#", _desc: "Download resume (placeholder)" }
+                "email": { _link: "mailto:carter.lagasse@gmail.com", _desc: "carter.lagasse@gmail.com" }
             },
             "projects/": {
                 "personal-website/": { _desc: "This terminal portfolio — interactive filesystem in the browser", _tags: ["HTML","CSS","JS"], _link: "https://github.com/CarterLagasse" },
@@ -561,6 +556,50 @@ let history = [];
 let histIdx = -1;
 
 const termBody = document.getElementById('termBody');
+
+// auto-load GitHub repos into projects/ — live, no token, fallback to static placeholders
+async function loadGitHubProjects() {
+    const projectsPath = ["~", "Carter-Lagasse/", "projects/"];
+    try {
+        const res = await fetch("https://api.github.com/users/CarterLagasse/repos?per_page=100&sort=updated", {
+            headers: { "Accept": "application/vnd.github+json" }
+        });
+        if (!res.ok) throw new Error(`GitHub ${res.status}`);
+        const repos = await res.json();
+        const filtered = repos
+            .filter(r => !r.fork && !r.archived)
+            .sort((a, b) => new Date(b.pushed_at || b.updated_at) - new Date(a.pushed_at || a.updated_at))
+            .slice(0, 12);
+        if (!filtered.length) return;
+        const projects = {};
+        for (const r of filtered) {
+            const key = r.name + "/";
+            const desc = r.description || (r.language ? `${r.language} project` : "GitHub repository");
+            const tags = [...(r.topics || []).slice(0, 3), r.language].filter(Boolean).slice(0, 3);
+            projects[key] = {
+                _desc: desc,
+                _tags: tags,
+                _link: r.html_url,
+                _stars: r.stargazers_count,
+                _updated: r.updated_at,
+                _branch: r.default_branch || "main",
+                _treeLoaded: false,
+                _treeLoading: false
+            };
+        }
+        // replace live
+        const node = getNode(projectsPath);
+        if (node) {
+            // clear and assign
+            Object.keys(node).forEach(k => delete node[k]);
+            Object.assign(node, projects);
+            console.log(`[projects] loaded ${Object.keys(projects).length} repos from GitHub`);
+        }
+    } catch (e) {
+        console.warn("[projects] GitHub fetch failed, keeping static placeholders", e);
+    }
+}
+loadGitHubProjects();
 
 function getNode(pathArr) {
     let node = FS;
@@ -582,14 +621,30 @@ function promptHTML() {
 }
 
 function isDir(name) { return name.endsWith("/"); }
+function isRepoPath(pathArr) {
+    return pathArr.length === 4 && pathArr[2] === "projects/" && isDir(pathArr[3]);
+}
+function getRepoKey(pathArr) {
+    if (pathArr.length >= 4 && pathArr[2] === "projects/") return pathArr[3];
+    return null;
+}
+function isInRepo(pathArr) {
+    return pathArr.length >= 4 && pathArr[2] === "projects/" && pathArr[3];
+}
 
 function renderLS(node) {
-    const entries = Object.keys(node);
-    if (entries.length === 0) return `<div class="output muted">empty</div>`;
+    const entries = Object.keys(node).filter(k => !k.startsWith("_"));
+    if (entries.length === 0) {
+        // if this is a repo node with only metadata, show card instead of empty
+        if (node && node._desc) {
+            return `<div class="output muted">empty — try <code>cat README.md</code> or <code>open</code> to view on GitHub</div>`;
+        }
+        return `<div class="output muted">empty</div>`;
+    }
     let html = `<div class="ls">`;
     for (const name of entries) {
         const val = node[name];
-        const cls = isDir(name) ? "dir" : (val && val._link ? "link" : "file");
+        const cls = isDir(name) ? "dir" : (val && typeof val === "object" && val._link ? "link" : "file");
         html += `<a class="item ${cls}" data-name="${name}" tabindex="0">${name}</a>`;
     }
     html += `</div>`;
@@ -599,21 +654,167 @@ function renderLS(node) {
 function renderCat(name, nodeVal) {
     if (typeof nodeVal === "string") {
         const esc = nodeVal.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-        return `<div class="card" style="white-space:pre-wrap;">${esc}</div>`;
+        return `<div class="card" style="white-space:pre-wrap; max-height:60vh; overflow:auto;">${esc}</div>`;
     }
-    if (nodeVal && nodeVal._desc) {
+    if (nodeVal && typeof nodeVal === "object" && nodeVal._desc) {
         let tags = "";
         if (nodeVal._tags) tags = `<div>${nodeVal._tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>`;
+        let extra = "";
+        if (nodeVal._stars !== undefined) extra += `<span class="tag">★ ${nodeVal._stars}</span>`;
+        if (nodeVal._branch) extra += `<span class="tag">${nodeVal._branch}</span>`;
         let link = "";
         if (nodeVal._link && nodeVal._link !== "#") link = `<div style="margin-top:6px;"><a href="${nodeVal._link}" target="_blank" rel="noopener">↗ open ${name.replace('/','')}</a> <span style="color:var(--vs-faint); font-size:12px;">${nodeVal._link}</span></div>`;
         else if (nodeVal._link === "#") link = `<div style="margin-top:6px; color:var(--vs-faint); font-size:12.5px;">— coming soon</div>`;
+        // if repo has children, hint
+        const hasChildren = Object.keys(nodeVal).some(k => !k.startsWith("_"));
+        const hint = hasChildren ? `<div style="margin-top:8px; color:var(--vs-dim); font-size:12px;">↳ <code>ls</code> to see files, <code>cat README.md</code> for readme</div>` : "";
         return `<div class="card">
             <div class="card-title">${name}</div>
             <p>${nodeVal._desc}</p>
-            ${tags}${link}
+            ${tags}${extra ? `<div>${extra}</div>` : ""}${link}${hint}
         </div>`;
     }
     return `<div class="output muted">no preview</div>`;
+}
+
+// --- GitHub tree / README for projects/<repo>/ (C with B fallback) ---
+async function fetchRepoInfo(repo) {
+    const r = repo.replace(/\/$/,'');
+    const res = await fetch(`https://api.github.com/repos/CarterLagasse/${r}`, { headers: { "Accept": "application/vnd.github+json" }});
+    if (!res.ok) throw new Error(`repo info ${res.status}`);
+    return res.json();
+}
+async function ensureRepoTree(repoKey) {
+    const projectsNode = getNode(["~","Carter-Lagasse/","projects/"]);
+    if (!projectsNode || !projectsNode[repoKey]) return null;
+    const repoNode = projectsNode[repoKey];
+    if (repoNode._treeLoaded || repoNode._treeLoading) return repoNode;
+    repoNode._treeLoading = true;
+    try {
+        const info = await fetchRepoInfo(repoKey);
+        const branch = info.default_branch || "main";
+        repoNode._branch = branch;
+        // try recursive tree
+        const treeRes = await fetch(`https://api.github.com/repos/CarterLagasse/${repoKey.replace(/\/$/,'')}/git/trees/${branch}?recursive=1`, { headers: { "Accept": "application/vnd.github+json" }});
+        if (!treeRes.ok) throw new Error(`tree ${treeRes.status}`);
+        const treeData = await treeRes.json();
+        if (treeData.truncated) throw new Error("truncated");
+        for (const entry of treeData.tree) {
+            const parts = entry.path.split("/");
+            let cur = repoNode;
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                const isLast = i === parts.length - 1;
+                if (isLast) {
+                    if (entry.type === "tree") {
+                        const k = part + "/";
+                        if (!cur[k]) cur[k] = {};
+                    } else { // blob
+                        if (cur[part] === undefined) cur[part] = ""; // placeholder, lazy load on cat
+                    }
+                } else {
+                    const k = part + "/";
+                    if (!cur[k]) cur[k] = {};
+                    cur = cur[k];
+                }
+            }
+        }
+        repoNode._treeLoaded = true;
+        console.log(`[tree] ${repoKey} loaded ${treeData.tree.length} entries via recursive`);
+        return repoNode;
+    } catch (e) {
+        console.warn(`[tree] ${repoKey} recursive failed, falling back to shallow`, e);
+        try {
+            const r = repoKey.replace(/\/$/,'');
+            const branch = getNode(["~","Carter-Lagasse/","projects/"])[repoKey]._branch || "main";
+            const res = await fetch(`https://api.github.com/repos/CarterLagasse/${r}/contents?ref=${branch}`, { headers: { "Accept": "application/vnd.github+json" }});
+            if (!res.ok) throw new Error(`contents ${res.status}`);
+            const list = await res.json();
+            if (Array.isArray(list)) {
+                for (const item of list) {
+                    if (item.type === "dir") {
+                        const k = item.name + "/";
+                        if (!repoNode[k]) repoNode[k] = {};
+                    } else if (item.type === "file") {
+                        if (repoNode[item.name] === undefined) repoNode[item.name] = "";
+                    }
+                }
+                repoNode._treeLoaded = true; // shallow, will lazy load subdirs on cd
+                repoNode._shallow = true;
+                return repoNode;
+            }
+        } catch (e2) {
+            console.warn(`[tree] ${repoKey} shallow also failed, will use link fallback`, e2);
+        }
+        // B fallback: keep as leaf with link, mark loaded to avoid retry loop
+        repoNode._treeLoaded = true;
+        repoNode._treeFailed = true;
+        return repoNode;
+    } finally {
+        repoNode._treeLoading = false;
+    }
+}
+async function ensureFileContent(repoKey, filePath, branch) {
+    const r = repoKey.replace(/\/$/,'');
+    const b = branch || "main";
+    // try raw first (no auth, CORS ok)
+    try {
+        const rawUrl = `https://raw.githubusercontent.com/CarterLagasse/${r}/${b}/${filePath}`;
+        const res = await fetch(rawUrl);
+        if (!res.ok) throw new Error(`raw ${res.status}`);
+        const text = await res.text();
+        // basic binary guard: if contains null byte or too large, treat as binary
+        if (text.length > 200000) return text.slice(0,200000) + "\n\n… truncated (200k)";
+        if (text.includes("\u0000")) return `[binary file: ${filePath} — open on GitHub]`;
+        return text;
+    } catch (e) {
+        // fallback to API contents
+        try {
+            const apiUrl = `https://api.github.com/repos/CarterLagasse/${r}/contents/${encodeURIComponent(filePath)}?ref=${b}`;
+            const res = await fetch(apiUrl, { headers: { "Accept": "application/vnd.github+json" }});
+            if (!res.ok) throw new Error(`api ${res.status}`);
+            const data = await res.json();
+            if (data.content && data.encoding === "base64") {
+                const decoded = atob(data.content.replace(/\n/g,''));
+                // try utf-8
+                try { return decodeURIComponent(escape(decoded)); } catch { return decoded; }
+            }
+            return `[cannot decode ${filePath}]`;
+        } catch (e2) {
+            throw e2;
+        }
+    }
+}
+async function ensureShallowDir(pathArr) {
+    // if we are in a repo subdir that was shallow-loaded, fetch its contents on demand
+    const repoKey = getRepoKey(pathArr);
+    if (!repoKey) return;
+    const repoNode = getNode(["~","Carter-Lagasse/","projects/", repoKey]);
+    if (!repoNode || !repoNode._shallow) return;
+    const subPath = pathArr.slice(4).join("").replace(/\/$/,''); // after repo/
+    if (!subPath) return; // root already shallow
+    const node = getNode(pathArr);
+    if (!node || Object.keys(node).some(k => !k.startsWith("_"))) return; // already has children
+    try {
+        const branch = repoNode._branch || "main";
+        const r = repoKey.replace(/\/$/,'');
+        const url = `https://api.github.com/repos/CarterLagasse/${r}/contents/${encodeURIComponent(subPath)}?ref=${branch}`;
+        const res = await fetch(url, { headers: { "Accept": "application/vnd.github+json" }});
+        if (!res.ok) throw new Error(`shallow dir ${res.status}`);
+        const list = await res.json();
+        if (Array.isArray(list)) {
+            for (const item of list) {
+                if (item.type === "dir") {
+                    const k = item.name + "/";
+                    if (!node[k]) node[k] = {};
+                } else {
+                    if (node[item.name] === undefined) node[item.name] = "";
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("[shallow dir] failed", subPath, e);
+    }
 }
 
 function addBlock(cmdText, outputHTML, withPrompt=true, customPrompt=null) {
@@ -682,7 +883,42 @@ function execCommand(raw) {
         case "dir":
             {
                 const node = getNode(cwd);
+                if (!node) { out = `<span style="color:var(--vs-red)">ls: cannot access '${cwdString()}': No such file or directory</span>`; break; }
+                const repoKey = getRepoKey(cwd);
+                const repoNode = repoKey ? getNode(["~","Carter-Lagasse/","projects/", repoKey]) : null;
+                // C: if inside a repo and tree not yet loaded, fetch it
+                if (repoKey && repoNode && !repoNode._treeLoaded && !repoNode._treeLoading) {
+                    out = `<span style="color:var(--vs-dim)">loading <code>${repoKey}</code> from GitHub…</span>`;
+                    addBlock(escapeHtml(input), out, true, promptBefore);
+                    document.getElementById('cmdInput').value = "";
+                    updatePrompt(); updateHeader();
+                    ensureRepoTree(repoKey).then(() => {
+                        ensureShallowDir(cwd).then(() => {
+                            const fresh = getNode(cwd);
+                            addBlock("ls", renderLS(fresh), true, promptHTML());
+                        });
+                    });
+                    return;
+                }
+                if (repoNode && repoNode._shallow) {
+                    const cur = getNode(cwd);
+                    const hasReal = cur && Object.keys(cur).some(k => !k.startsWith("_"));
+                    if (!hasReal) {
+                        out = `<span style="color:var(--vs-dim)">loading ${cwdString()}…</span>`;
+                        addBlock(escapeHtml(input), out, true, promptBefore);
+                        document.getElementById('cmdInput').value = "";
+                        updatePrompt(); updateHeader();
+                        ensureShallowDir(cwd).then(() => {
+                            const fresh = getNode(cwd);
+                            addBlock("ls", renderLS(fresh), true, promptHTML());
+                        });
+                        return;
+                    }
+                }
                 out = renderLS(node);
+                if (out.includes("empty") && node && node._desc && node._link) {
+                    out = renderCat(cwd[cwd.length-1] || "repo", node) + `<div style="margin-top:8px">${renderLS(node)}</div>`;
+                }
             }
             break;
         case "pwd":
@@ -713,14 +949,22 @@ function execCommand(raw) {
                     if (node[tryName] && isDir(tryName)) {
                         cwd.push(tryName);
                         hasOutput = false;
+                        // C: if entering a repo, kick off background tree load (no output, B fallback if fails)
+                        const newRepoKey = getRepoKey(cwd);
+                        if (newRepoKey) ensureRepoTree(newRepoKey);
+                        else if (isInRepo(cwd)) ensureShallowDir(cwd);
                     } else if (node[target] && isDir(target)) {
                         cwd.push(target);
                         hasOutput = false;
+                        const newRepoKey = getRepoKey(cwd);
+                        if (newRepoKey) ensureRepoTree(newRepoKey);
                     } else {
                         const absNode = getNode(["~", "Carter-Lagasse/"]);
                         if (absNode[tryName]) {
                             cwd = ["~", "Carter-Lagasse/", tryName];
                             hasOutput = false;
+                            const newRepoKey = getRepoKey(cwd);
+                            if (newRepoKey) ensureRepoTree(newRepoKey);
                         } else {
                             out = `<span style="color:var(--vs-red)">bash: cd: ${target}: No such file or directory</span>`;
                             hasOutput = true;
@@ -737,10 +981,44 @@ function execCommand(raw) {
                 let target = args.join(" ").replace(/^["']|["']$/g, "");
                 if (!target) { out = `<span style="color:var(--vs-red)">cat: missing operand</span>`; break; }
                 const node = getNode(cwd);
+                if (!node) { out = `<span style="color:var(--vs-red)">cat: ${target}: No such file or directory</span>`; break; }
                 let val = node[target];
                 if (val === undefined) {
                     const found = Object.keys(node).find(k => k.toLowerCase() === target.toLowerCase());
                     if (found) { target = found; val = node[found]; }
+                }
+                // C: if inside repo and file is placeholder "" or missing but exists in GitHub, fetch it
+                const repoKey = getRepoKey(cwd);
+                if (repoKey && (val === "" || val === undefined)) {
+                    // check if we should try to fetch (only if target looks like file)
+                    const maybeFile = !isDir(target) && target.includes(".");
+                    // also if val === undefined but tree not loaded, ensure tree first
+                    const repoNode = getNode(["~","Carter-Lagasse/","projects/", repoKey]);
+                    const branch = repoNode ? repoNode._branch || "main" : "main";
+                    const base = cwd.slice(4).join("");
+                    const fullPath = (base + target).replace(/^\/+/, "");
+                    // if val === "" we know it's a file placeholder; if val === undefined but tree not loaded, we still try fetch
+                    if (val === "" || (val === undefined && maybeFile)) {
+                        out = `<span style="color:var(--vs-dim)">fetching <code>${fullPath}</code> from GitHub…</span>`;
+                        addBlock(escapeHtml(input), out, true, promptBefore);
+                        document.getElementById('cmdInput').value = "";
+                        updatePrompt(); updateHeader();
+                        (async () => {
+                            try {
+                                // ensure tree if needed for path existence check (optional)
+                                if (repoNode && !repoNode._treeLoaded) await ensureRepoTree(repoKey);
+                                const text = await ensureFileContent(repoKey, fullPath, branch);
+                                // cache
+                                const cur = getNode(cwd);
+                                if (cur) cur[target] = text;
+                                addBlock(`cat "${target}"`, renderCat(target, text), true, promptHTML());
+                            } catch (e) {
+                                const link = repoNode ? repoNode._link : `https://github.com/CarterLagasse/${repoKey.replace(/\/$/,'')}`;
+                                addBlock(`cat "${target}"`, `<span style="color:var(--vs-red)">cat: ${target}: ${e.message}</span><br><span style="color:var(--vs-dim)">↗ <a href="${link}/blob/${branch}/${fullPath}" target="_blank" style="color:var(--vs-cyan)">open on GitHub</a> — or <code>open ${repoKey.replace(/\/$/,'')}</code></span>`, true, promptHTML());
+                            }
+                        })();
+                        return;
+                    }
                 }
                 if (val === undefined) {
                     out = `<span style="color:var(--vs-red)">cat: ${target}: No such file or directory</span>`;
@@ -830,10 +1108,12 @@ function initDemo() {
 
     cwd = ["~"];
     termBody.innerHTML = `
-        <div class="ascii">  ___   _   ___ _____ ___ ___   _      _   ___   _   ___ ___ ___ 
- / __| /_\\ | _ \\_   _| __| _ \\ | |    /_\\ / __| /_\\ / __/ __| __|
-| (__ / _ \\|   / | | | _||   / | |__ / _ \\ (_ |/ _ \\\\__ \\__ \\ _| 
- \\___/_/ \\_\\_|_\\ |_| |___|_|_\\ |____/_/ \\_\\___/_/ \\_\\___/___/___|</div>
+        <div class="ascii">  ____           _              _
+ / ___|__ _ _ __| |_ ___ _ __  | |    __ _  __ _  __ _ ___ ___  ___
+| |   / _\` | '__| __/ _ \\ '__| | |   / _\` |/ _\` |/ _\` / __/ __|/ _ \\
+| |__| (_| | |  | ||  __/ |    | |__| (_| | (_| | (_| \\__ \\__ \\  __/
+ \\____\\__,_|_|   \\__\\___|_|    |_____\\__,_|\\__, |\\__,_|___/___/\\___|
+                                           |___/</div>
         <div class="input-line" id="inputLine">
             <span class="prompt">${promptHTML()}</span>
             <input id="cmdInput" autocomplete="off" spellcheck="false" disabled>
