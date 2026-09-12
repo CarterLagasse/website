@@ -1,110 +1,933 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name=""viewport" content=""width=device-width, intial-scale="1.0">
-        <title>Carter Lagasse</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carter Lagasse — ~/Carter-Lagasse</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --text-primary: #1a1a1a;
-            --text-secondary: #444;
-            --border: #d8d8d8;
-            --bg-alt: #f6f6f7;
-            --accent: #2563eb;
+            --vs-bg: #020617;
+            --vs-bg-header: #0f172a;
+            --vs-bg-panel: #0f172a;
+            --vs-bg-hover: #1e293b;
+            --vs-bg-card: #1e293b;
+            --vs-border: #1e293b;
+            --vs-border-light: #334155;
+            --vs-text: #e2e8f0;
+            --vs-dim: #64748b;
+            --vs-faint: #475569;
+            --vs-blue: #38bdf8;
+            --vs-cyan: #22d3ee;
+            --vs-green: #34d399;
+            --vs-yellow: #fbbf24;
+            --vs-red: #f87171;
+            --vs-accent: #38bdf8;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Roboto', system-ui, sans-serif;
-            margin: 0;
-            padding: 3rem 1.5rem;
+            background: var(--vs-bg);
+            background-image:
+                radial-gradient(at 50% 0%, rgba(56,189,248,0.09) 0%, transparent 55%),
+                radial-gradient(at 85% 15%, rgba(52,211,153,0.06) 0%, transparent 45%);
+            color: var(--vs-text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 48px 16px 40px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-header {
             text-align: center;
-            color: var(--text-primary);
+            margin-bottom: 28px;
+            animation: fadeIn 0.6s ease;
         }
 
-        h1 {
+        .page-header h1 {
+            font-size: 11px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--vs-dim);
             font-weight: 500;
-            font-size: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 10px;
         }
 
-        /* Social Links */
-        .links {
+        .page-header .name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--vs-text);
+            letter-spacing: -0.02em;
+        }
+
+        .page-header .name span {
+            color: var(--vs-faint);
+            font-weight: 400;
+        }
+
+        /* Professional terminal window */
+        .vscode {
+            width: 100%;
+            max-width: 760px;
+            background: var(--vs-bg-panel);
+            border: 1px solid var(--vs-border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.45),
+                0 0 0 1px rgba(255,255,255,0.03) inset;
             display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            max-width: 500px;
+            flex-direction: column;
         }
 
-        .links a {
+        .panel-header {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            color: var(--text-secondary);
+            justify-content: space-between;
+            height: 44px;
+            padding: 0 14px;
+            background: #0b1222;
+            border-bottom: 1px solid var(--vs-border);
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .panel-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .dot.r { background: #ef4444; border-color: #dc2626; opacity: 0.95; }
+        .dot.y { background: #eab308; border-color: #ca8a04; opacity: 0.95; }
+        .dot.g { background: #22c55e; border-color: #16a34a; opacity: 0.95; }
+
+        .panel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--vs-dim);
+            letter-spacing: 0.01em;
+        }
+
+        .panel-title span {
+            color: var(--vs-text);
+        }
+
+        .panel-right {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--vs-faint);
+            letter-spacing: 0.02em;
+        }
+
+        /* Terminal body */
+        .terminal {
+            background: var(--vs-bg-panel);
+            flex: 1;
+        }
+
+        .body {
+            padding: 18px 20px 20px;
+            min-height: 480px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            font-variant-ligatures: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .block {
+            margin: 0;
+            padding: 0;
+        }
+
+        .line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: baseline;
+        }
+
+        .prompt {
+            color: var(--vs-text);
+            font-weight: 400;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        .prompt .user { color: var(--vs-green); }
+        .prompt .at { color: var(--vs-text); }
+        .prompt .host { color: var(--vs-green); }
+        .prompt .colon { color: var(--vs-text); }
+        .prompt .path { color: var(--vs-blue); }
+        .prompt .dollar { color: var(--vs-text); margin-left: 6px; }
+
+        .cmd {
+            color: var(--vs-text);
+        }
+
+        .output {
+            margin-top: 0;
+            color: var(--vs-text);
+        }
+
+        .output.muted {
+            color: var(--vs-dim);
+            font-size: 12.5px;
+        }
+
+        .ls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            cursor: pointer;
+            padding: 1px 6px;
+            margin-left: -6px;
+            border-radius: 4px;
             text-decoration: none;
-            padding: 0.6rem 1.2rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            background: var(--bg-alt);
-            font-size: 0.9rem;
+            color: inherit;
+            font-size: 13px;
+            line-height: 1.6;
+            transition: background 0.12s;
         }
 
-        .links a:hover {
-            color: var(--accent);
-            border-color: var(--accent);
+        .item:hover {
+            background: var(--vs-bg-hover);
         }
 
-        /* Responsive */
+        .item:focus-visible {
+            outline: 1px solid var(--vs-accent);
+        }
+
+        .item.dir { color: var(--vs-blue); font-weight: 500; }
+        .item.file { color: var(--vs-text); opacity: 0.85; }
+        .item.link { color: var(--vs-cyan); }
+
+        .card {
+            margin: 6px 0 0;
+            background: rgba(30,41,59,0.6);
+            border: 1px solid var(--vs-border-light);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .card-title {
+            color: var(--vs-text);
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .card p { color: #94a3b8; }
+        .card a {
+            color: var(--vs-blue);
+            text-decoration: none;
+        }
+        .card a:hover { text-decoration: underline; }
+
+        .tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 1px 7px;
+            background: #0b1222;
+            color: var(--vs-dim);
+            border: 1px solid var(--vs-border);
+            border-radius: 99px;
+            margin-right: 6px;
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0;
+            padding: 0;
+        }
+
+        .input-line .prompt { flex-shrink: 0; }
+
+        #cmdInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--vs-text);
+            font-family: inherit;
+            font-size: 13px;
+            caret-color: var(--vs-text);
+            min-width: 0;
+        }
+
+        #cmdInput::placeholder { color: transparent; }
+
+        .ascii {
+            color: var(--vs-text);
+            font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.25;
+            margin: 0 0 16px;
+            overflow-x: auto;
+            white-space: pre;
+            letter-spacing: 0;
+            word-spacing: 0;
+            font-weight: 500;
+            font-variant-ligatures: none;
+            font-feature-settings: normal;
+            text-rendering: geometricPrecision;
+            display: block;
+        }
+        .ascii .hl {
+            color: var(--vs-text);
+        }
+        .cool-ascii {
+            font-family: 'JetBrains Mono', 'Cascadia Code', 'DejaVu Sans Mono', Consolas, monospace;
+            font-size: 8px;
+            line-height: 1;
+            letter-spacing: 0;
+            font-weight: 400;
+            color: #e4e4e7;
+            background:
+                radial-gradient(at 20% 20%, rgba(56,189,248,0.07) 0%, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(34,211,238,0.06) 0%, transparent 45%),
+                rgba(39,39,42,0.32);
+            border: 1px solid #27272a;
+            border-radius: 10px;
+            padding: 12px 10px 10px;
+            margin: 0 0 10px;
+            overflow-x: auto;
+            white-space: pre;
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+            text-shadow: none;
+            font-variant-ligatures: none;
+            font-feature-settings: normal;
+            text-rendering: geometricPrecision;
+            -webkit-font-smoothing: antialiased;
+            tab-size: 4;
+        }
+        .cool-ascii::-webkit-scrollbar { height: 6px; }
+        .cool-ascii::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        /* opencode-style brand - replaces chunky block - tighter */
+        .opencode-brand {
+            margin: 0 0 14px;
+            padding: 1px 0 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            border-left: 2px solid #27272a;
+            padding-left: 10px;
+        }
+        .opencode-brand .brand-name {
+            font-size: 18px;
+            font-weight: 650;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        .opencode-brand .brand-name .accent {
+            display: flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        .opencode-brand .brand-name .accent i {
+            width: 7px;
+            height: 7px;
+            display: block;
+            background: #52525b;
+        }
+        .opencode-brand .brand-name .accent i:nth-child(1) { background: #e4e4e7; }
+        .opencode-brand .brand-name .accent i:nth-child(2) { background: #a1a1aa; }
+        .opencode-brand .brand-name .accent i:nth-child(3) { background: #71717a; }
+        .opencode-brand .brand-sub {
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #71717a;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .opencode-brand .brand-sub span {
+            color: #a1a1aa;
+        }
+        /* collage - Carter Lagasse made of small squares - tighter + cooler collage */
+        .collage {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 12px 14px 10px;
+            background:
+                radial-gradient(at 20% 20%, rgba(56,189,248,0.06) 0%, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(34,211,238,0.05) 0%, transparent 45%),
+                rgba(39,39,42,0.22);
+            border: 1px solid #27272a;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .collage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 14px 14px;
+            pointer-events: none;
+        }
+        .collage .word {
+            display: flex;
+            gap: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .collage .letter {
+            display: grid;
+            grid-template-columns: repeat(5, 7px);
+            grid-template-rows: repeat(6, 7px);
+            gap: 2px;
+            position: relative;
+        }
+        .collage .pixel {
+            width: 7px;
+            height: 7px;
+            border-radius: 1.5px;
+            background: transparent;
+            position: relative;
+        }
+        .collage .pixel.on {
+            background: #e4e4e7;
+            box-shadow:
+                0 1px 3px rgba(0,0,0,0.45),
+                0 0 0 1px rgba(0,0,0,0.2) inset,
+                inset 0 1px 0 rgba(255,255,255,0.25);
+            animation: collagePop 0.45s cubic-bezier(0.34,1.56,0.64,1) backwards;
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+            --rot: 0deg;
+        }
+        .collage .pixel.on:nth-child(3n) { background: #d4d4d8; --rot: 0.6deg; transform: rotate(var(--rot)) translateY(-0.4px); }
+        .collage .pixel.on:nth-child(5n) { background: #a1a1aa; --rot: -0.5deg; transform: rotate(var(--rot)) translateX(0.4px); }
+        .collage .pixel.on:nth-child(7n) { background: #fafafa; --rot: 0.8deg; transform: rotate(var(--rot)); box-shadow: 0 0 6px rgba(250,250,250,0.25), 0 1px 3px rgba(0,0,0,0.45); }
+        .collage .pixel.on:nth-child(11n) { background: #38bdf8; --rot: -0.7deg; transform: rotate(var(--rot)); box-shadow: 0 0 8px rgba(56,189,248,0.35), 0 1px 3px rgba(0,0,0,0.45); }
+        .collage .pixel.on:nth-child(13n) { background: #22d3ee; --rot: 0.4deg; transform: rotate(var(--rot)); }
+        .collage .pixel.on:nth-child(17n) { background: #e4e4e7; --rot: -0.9deg; transform: rotate(var(--rot)) translateY(0.5px); }
+        .collage .pixel.on:hover {
+            transform: scale(1.55) rotate(3deg) translateY(-1px) !important;
+            z-index: 5;
+            background: #38bdf8 !important;
+            box-shadow: 0 0 10px rgba(56,189,248,0.7), 0 4px 12px rgba(0,0,0,0.4) !important;
+            filter: brightness(1.15);
+        }
+        .collage .letter:hover {
+            filter: drop-shadow(0 0 6px rgba(56,189,248,0.15));
+        }
+        @keyframes collagePop {
+            from { opacity: 0; transform: scale(0.2) rotate(-12deg) translateY(6px); }
+            to { opacity: 1; transform: scale(1) rotate(var(--rot,0deg)) translateY(0); }
+        }
+        /* staggered entrance - each pixel gets incremental delay */
+        .collage .pixel.on:nth-child(1) { animation-delay: 0.02s; }
+        .collage .pixel.on:nth-child(2) { animation-delay: 0.04s; }
+        .collage .pixel.on:nth-child(3) { animation-delay: 0.06s; }
+        .collage .pixel.on:nth-child(4) { animation-delay: 0.08s; }
+        .collage .pixel.on:nth-child(5) { animation-delay: 0.10s; }
+        .collage .pixel.on:nth-child(6) { animation-delay: 0.12s; }
+        .collage .pixel.on:nth-child(7) { animation-delay: 0.14s; }
+        .collage .pixel.on:nth-child(8) { animation-delay: 0.16s; }
+        .collage .pixel.on:nth-child(9) { animation-delay: 0.18s; }
+        .collage .pixel.on:nth-child(10) { animation-delay: 0.20s; }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 3px 20px;
+            font-size: 12.5px;
+            margin-top: 6px;
+        }
+        .help-grid dt { color: var(--vs-blue); }
+        .help-grid dd { color: var(--vs-dim); }
+
+        @keyframes fadeIn { from { opacity:0; transform: translateY(4px)} to {opacity:1; transform: translateY(0)} }
+
         @media (max-width: 640px) {
-            body {
-                padding: 2rem 1rem;
+            body { padding: 24px 12px 32px; }
+            .vscode { max-width: 100%; border-radius: 10px; }
+            .body { padding: 14px 14px 16px; font-size: 12.5px; }
+            .ascii { font-size: 7.5px; }
+            .panel-header { height: 40px; padding: 0 12px; }
+            .panel-title { font-size: 11px; }
+            .cool-ascii { font-size: 5px; padding: 8px 6px 6px; }
+            .collage { gap: 6px 10px; }
+            .collage .word { gap: 3px; }
+            .collage .letter {
+                grid-template-columns: repeat(5, 5px);
+                grid-template-rows: repeat(6, 5px);
+                gap: 1.5px;
             }
-
-            h1 {
-                font-size: 1.6rem;
-            }
-
-            .links {
-                flex-direction: column;
-                width: 100%;
-                max-width: 280px;
-                margin: 0 auto;
-            }
-
-            .links a {
-                width: 100%;
-                justify-content: center;
-            }
+            .collage .pixel { width: 5px; height: 5px; }
         }
     </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Portfolio — 2026</h1>
+        <div class="name">Carter Lagasse <span>· software developer</span></div>
+    </div>
 
-    </head>
-    <body>
-        <h1 style="font-family: roboto, sytem-ui; font-weight: 500">
-            Carter Lagasse
-        </h1>
-
-        <div class="links">
-            <a href="https://github.com/CarterLagasse" target="_blank">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-            GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/carter-lagasse/" target="_blank">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            LinkedIn
-            </a>
+    <div class="vscode">
+        <div class="panel-header">
+            <div class="panel-left">
+                <div class="dots">
+                    <div class="dot r"></div>
+                    <div class="dot y"></div>
+                    <div class="dot g"></div>
+                </div>
+                <div class="panel-title">carter@website: <span>~/Carter-Lagasse</span></div>
+            </div>
+            <div class="panel-right">zsh</div>
         </div>
 
-        
-    </body>
+        <div class="terminal" id="terminal">
+            <div class="body" id="termBody">
+                <!-- injected -->
+            </div>
+        </div>
+    </div>
+
+
+<script>
+const FS = {
+    "~": {
+        "Carter-Lagasse/": {
+            "connect/": {
+                "github": { _link: "https://github.com/CarterLagasse", _desc: "github.com/CarterLagasse" },
+                "linkedin": { _link: "https://www.linkedin.com/in/carter-lagasse/", _desc: "linkedin.com/in/carter-lagasse" },
+                "email": { _link: "mailto:carter.lagasse@gmail.com", _desc: "carter.lagasse@gmail.com" },
+                "resume.pdf": { _link: "#", _desc: "Download resume (placeholder)" }
+            },
+            "projects/": {
+                "personal-website/": { _desc: "This terminal portfolio — interactive filesystem in the browser", _tags: ["HTML","CSS","JS"], _link: "https://github.com/CarterLagasse" },
+                "project-atlas/": { _desc: "Placeholder — data visualization toolkit for large datasets", _tags: ["React","D3"], _link: "#" },
+                "cli-utils/": { _desc: "Placeholder — collection of productivity CLI tools", _tags: ["Python","CLI"], _link: "#" }
+            },
+            "experience/": {
+                "README.md": "# Experience\n\nAdd internships, work, or research here.\n\nExample:\n- Software Intern @ Company — Summer 2025\n- Built X, improved Y by Z%",
+            },
+            "README.md": "# Carter Lagasse\n\nWelcome to my terminal portfolio!\n\nTry:\n  ls, cd <folder>, cat <file>, open <folder>, help"
+        }
+    }
+};
+
+let cwd = ["~", "Carter-Lagasse/"];
+let history = [];
+let histIdx = -1;
+
+const termBody = document.getElementById('termBody');
+
+function getNode(pathArr) {
+    let node = FS;
+    for (const p of pathArr) {
+        if (node[p] === undefined) return null;
+        node = node[p];
+    }
+    return node;
+}
+
+function cwdString() {
+    if (cwd.length === 1) return "~";
+    return "~/" + cwd.slice(1).join("");
+}
+
+function promptHTML() {
+    const p = cwdString();
+    return `<span class="prompt"><span class="user">carter</span><span class="at">@</span><span class="host">website</span><span class="colon">:</span><span class="path">${p}</span><span class="dollar">$</span></span>`;
+}
+
+function isDir(name) { return name.endsWith("/"); }
+
+function renderLS(node) {
+    const entries = Object.keys(node);
+    if (entries.length === 0) return `<div class="output muted">empty</div>`;
+    let html = `<div class="ls">`;
+    for (const name of entries) {
+        const val = node[name];
+        const cls = isDir(name) ? "dir" : (val && val._link ? "link" : "file");
+        html += `<a class="item ${cls}" data-name="${name}" tabindex="0">${name}</a>`;
+    }
+    html += `</div>`;
+    return html;
+}
+
+function renderCat(name, nodeVal) {
+    if (typeof nodeVal === "string") {
+        const esc = nodeVal.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        return `<div class="card" style="white-space:pre-wrap;">${esc}</div>`;
+    }
+    if (nodeVal && nodeVal._desc) {
+        let tags = "";
+        if (nodeVal._tags) tags = `<div>${nodeVal._tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>`;
+        let link = "";
+        if (nodeVal._link && nodeVal._link !== "#") link = `<div style="margin-top:6px;"><a href="${nodeVal._link}" target="_blank" rel="noopener">↗ open ${name.replace('/','')}</a> <span style="color:var(--vs-faint); font-size:12px;">${nodeVal._link}</span></div>`;
+        else if (nodeVal._link === "#") link = `<div style="margin-top:6px; color:var(--vs-faint); font-size:12.5px;">— coming soon</div>`;
+        return `<div class="card">
+            <div class="card-title">${name}</div>
+            <p>${nodeVal._desc}</p>
+            ${tags}${link}
+        </div>`;
+    }
+    return `<div class="output muted">no preview</div>`;
+}
+
+function addBlock(cmdText, outputHTML, withPrompt=true, customPrompt=null) {
+    const div = document.createElement('div');
+    div.className = 'block';
+    const prompt = customPrompt || promptHTML();
+    div.innerHTML = `
+        ${withPrompt ? `<div class="line">${prompt} <span class="cmd">${cmdText}</span></div>` : ``}
+        ${outputHTML ? `<div class="output">${outputHTML}</div>` : ``}
+    `;
+    const inputLine = document.getElementById('inputLine');
+    termBody.insertBefore(div, inputLine);
+    bindClicks(div);
+    scrollToBottom();
+}
+
+function scrollToBottom() {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function bindClicks(root) {
+    root.querySelectorAll('.item').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            const name = el.dataset.name;
+            const node = getNode(cwd);
+            const val = node ? node[name] : null;
+            if (val && val._link && !isDir(name)) {
+                execCommand(`open "${name}"`);
+            } else if (isDir(name)) {
+                execCommand(`cd ${name}`);
+            } else {
+                execCommand(`cat "${name}"`);
+            }
+        });
+        el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') el.click();
+        });
+    });
+}
+
+function execCommand(raw) {
+    const input = raw.trim();
+    if (!input) return;
+    history.push(input);
+    histIdx = history.length;
+
+    const promptBefore = promptHTML();
+    const [cmd, ...args] = splitArgs(input);
+    let out = "";
+    let hasOutput = true;
+
+    switch(cmd) {
+        case "help":
+            out = `<div class="help-grid">
+                <dt>ls</dt><dd>list directory contents</dd>
+                <dt>cd &lt;dir&gt;</dt><dd>change directory — e.g. <code>cd connect</code>, <code>cd ..</code></dd>
+                <dt>cat &lt;file&gt;</dt><dd>view file — e.g. <code>cat README.md</code></dd>
+                <dt>open &lt;name&gt;</dt><dd>open link — e.g. <code>open github</code></dd>
+                <dt>pwd</dt><dd>print working directory</dd>
+                <dt>clear</dt><dd>clear terminal</dd>
+                <dt>whoami</dt><dd>about carter</dd>
+            </div>`;
+            break;
+        case "ls":
+        case "dir":
+            {
+                const node = getNode(cwd);
+                out = renderLS(node);
+            }
+            break;
+        case "pwd":
+            out = cwdString();
+            break;
+        case "whoami":
+            out = `<div class="card"><div class="card-title">Carter Lagasse</div><p>Software developer · builder · terminal enthusiast<br>Use <code>ls</code> and <code>cd connect</code> to get in touch.</p></div>`;
+            break;
+        case "clear":
+            termBody.querySelectorAll('.block').forEach(b => b.remove());
+            document.getElementById('cmdInput').value = "";
+            return;
+        case "cd":
+            {
+                let target = (args[0] || "").replace(/^["']|["']$/g, "");
+                if (!target || target === "~" || target === "~/") {
+                    cwd = ["~"];
+                    hasOutput = false;
+                } else if (target === ".." || target === "../") {
+                    if (cwd.length > 1) cwd.pop();
+                    hasOutput = false;
+                } else if (target === "." || target === "./") {
+                    hasOutput = false;
+                } else {
+                    let tryName = target;
+                    if (!tryName.endsWith("/")) tryName += "/";
+                    const node = getNode(cwd);
+                    if (node[tryName] && isDir(tryName)) {
+                        cwd.push(tryName);
+                        hasOutput = false;
+                    } else if (node[target] && isDir(target)) {
+                        cwd.push(target);
+                        hasOutput = false;
+                    } else {
+                        const absNode = getNode(["~", "Carter-Lagasse/"]);
+                        if (absNode[tryName]) {
+                            cwd = ["~", "Carter-Lagasse/", tryName];
+                            hasOutput = false;
+                        } else {
+                            out = `<span style="color:var(--vs-red)">bash: cd: ${target}: No such file or directory</span>`;
+                            hasOutput = true;
+                        }
+                    }
+                }
+                if (!hasOutput) {
+                    out = "";
+                }
+            }
+            break;
+        case "cat":
+            {
+                let target = args.join(" ").replace(/^["']|["']$/g, "");
+                if (!target) { out = `<span style="color:var(--vs-red)">cat: missing operand</span>`; break; }
+                const node = getNode(cwd);
+                let val = node[target];
+                if (val === undefined) {
+                    const found = Object.keys(node).find(k => k.toLowerCase() === target.toLowerCase());
+                    if (found) { target = found; val = node[found]; }
+                }
+                if (val === undefined) {
+                    out = `<span style="color:var(--vs-red)">cat: ${target}: No such file or directory</span>`;
+                } else if (isDir(target)) {
+                    out = `<span style="color:var(--vs-red)">cat: ${target}: Is a directory</span>`;
+                } else {
+                    out = renderCat(target, val);
+                }
+            }
+            break;
+        case "open":
+        case "xdg-open":
+            {
+                let target = (args[0] || "").replace(/^["']|["']$/g, "").replace(/\/$/, "");
+                if (!target) { out = `<span style="color:var(--vs-red)">open: missing operand</span>`; break; }
+                const node = getNode(cwd);
+                let foundKey = Object.keys(node).find(k => k.replace(/\/$/,'').toLowerCase() === target.toLowerCase());
+                let val = foundKey ? node[foundKey] : null;
+                if (!val) {
+                    const conn = getNode(["~","Carter-Lagasse/","connect/"]);
+                    foundKey = Object.keys(conn).find(k => k.replace(/\/$/,'').toLowerCase() === target.toLowerCase());
+                    if (foundKey) val = conn[foundKey];
+                }
+                if (val && val._link && val._link !== "#") {
+                    window.open(val._link, "_blank");
+                    out = `opening <span style="color:var(--vs-cyan)">${val._link}</span> ...`;
+                } else if (val && val._link === "#") {
+                    out = `<span style="color:var(--vs-yellow)">coming soon — ${target}</span>`;
+                } else {
+                    out = `<span style="color:var(--vs-red)">open: ${target}: not found</span>`;
+                }
+            }
+            break;
+        case "github":
+        case "linkedin":
+            window.open(cmd === "github" ? "https://github.com/CarterLagasse" : "https://www.linkedin.com/in/carter-lagasse/", "_blank");
+            out = `opening ${cmd} ...`;
+            break;
+        default:
+            out = `<span style="color:var(--vs-red)">bash: ${cmd}: command not found</span>`;
+    }
+
+    if (!hasOutput && out === "") {
+        addBlock(escapeHtml(input), "", true, promptBefore);
+        document.getElementById('cmdInput').value = "";
+        updatePrompt();
+        updateHeader();
+        return;
+    }
+
+    addBlock(escapeHtml(input), out, true, promptBefore);
+    document.getElementById('cmdInput').value = "";
+    updatePrompt();
+    updateHeader();
+}
+
+function splitArgs(str) {
+    const re = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(str)) !== null) {
+        out.push(m[1] || m[2] || m[0]);
+    }
+    return out;
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function updatePrompt() {
+    const p = document.querySelector('#inputLine .prompt');
+    if (p) p.innerHTML = `<span class="user">carter</span><span class="at">@</span><span class="host">website</span><span class="colon">:</span><span class="path">${cwdString()}</span><span class="dollar">$</span>`;
+}
+function updateHeader() {
+    const h = document.querySelector('.panel-title span');
+    if (h) h.textContent = cwdString();
+}
+
+function initDemo() {
+    const sequence = [
+        "cd Carter-Lagasse",
+        "ls",
+        "cd connect",
+        "ls"
+    ];
+
+    cwd = ["~"];
+    termBody.innerHTML = `
+        <div class="ascii">  ___   _   ___ _____ ___ ___   _      _   ___   _   ___ ___ ___ 
+ / __| /_\\ | _ \\_   _| __| _ \\ | |    /_\\ / __| /_\\ / __/ __| __|
+| (__ / _ \\|   / | | | _||   / | |__ / _ \\ (_ |/ _ \\\\__ \\__ \\ _| 
+ \\___/_/ \\_\\_|_\\ |_| |___|_|_\\ |____/_/ \\_\\___/_/ \\_\\___/___/___|</div>
+        <div class="input-line" id="inputLine">
+            <span class="prompt">${promptHTML()}</span>
+            <input id="cmdInput" autocomplete="off" spellcheck="false" disabled>
+        </div>
+    `;
+    const input = document.getElementById('cmdInput');
+    input.disabled = true;
+
+    let idx = 0;
+
+    function typeAtPrompt(text, speed, cb) {
+        const inp = document.getElementById('cmdInput');
+        inp.disabled = false;
+        inp.value = "";
+        inp.focus();
+        let i = 0;
+        const iv = setInterval(() => {
+            inp.value = text.slice(0, ++i);
+            try { inp.setSelectionRange(i, i); } catch {}
+            if (i >= text.length) {
+                clearInterval(iv);
+                setTimeout(cb, 260);
+            }
+        }, speed);
+    }
+
+    function next() {
+        if (idx >= sequence.length) {
+            const finalInput = document.getElementById('cmdInput');
+            finalInput.disabled = false;
+            finalInput.value = "";
+            finalInput.focus();
+            setupInput();
+            return;
+        }
+        const cmd = sequence[idx];
+        typeAtPrompt(cmd, 38, () => {
+            execCommand(cmd);
+            const inp = document.getElementById('cmdInput');
+            inp.disabled = true;
+            inp.value = "";
+            idx++;
+            setTimeout(next, 380);
+        });
+    }
+
+    setTimeout(next, 600);
+}
+
+function setupInput() {
+    const input = document.getElementById('cmdInput');
+    if (!input) return;
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            execCommand(input.value);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (history.length) {
+                histIdx = Math.max(0, histIdx - 1);
+                input.value = history[histIdx] || "";
+                setTimeout(()=> input.setSelectionRange(input.value.length, input.value.length), 0);
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (histIdx < history.length - 1) {
+                histIdx++;
+                input.value = history[histIdx] || "";
+            } else {
+                histIdx = history.length;
+                input.value = "";
+            }
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            const val = input.value.trim();
+            const parts = splitArgs(val);
+            const last = parts[parts.length - 1] || "";
+            const node = getNode(cwd);
+            const candidates = Object.keys(node).filter(k => k.toLowerCase().startsWith(last.toLowerCase()));
+            if (candidates.length === 1) {
+                const full = val.slice(0, val.lastIndexOf(last)) + candidates[0];
+                input.value = full + (candidates[0].endsWith("/") ? "" : " ");
+            } else if (candidates.length > 1) {
+                addBlock(val, `<div class="ls">${candidates.map(c=>`<span class="item ${isDir(c)?'dir':'file'}">${c}</span>`).join(" ")}</div>`, true);
+            }
+        }
+    });
+    termBody.addEventListener('click', (e) => {
+        if (e.target.closest('.item') || e.target.closest('a')) return;
+        input.focus();
+    });
+    input.focus();
+}
+
+initDemo();
+</script>
+</body>
 </html>
