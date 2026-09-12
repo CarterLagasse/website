@@ -33,6 +33,47 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #020617;
+        }
+
+        /* themed scrollbars — matches dark background */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        ::-webkit-scrollbar-corner {
+            background: #020617;
+        }
+        .card,
+        .markdown pre,
+        .markdown table {
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #0f172a;
+        }
+        .card::-webkit-scrollbar-track,
+        .markdown pre::-webkit-scrollbar-track,
+        .markdown table::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .card::-webkit-scrollbar-thumb,
+        .markdown pre::-webkit-scrollbar-thumb,
+        .markdown table::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+
         body {
             background: var(--vs-bg);
             background-image:
@@ -101,9 +142,15 @@
 
         .prompt {
             color: var(--vs-text);
+            font-family: 'JetBrains Mono', monospace;
             font-weight: 400;
             white-space: nowrap;
             font-size: 13px;
+            line-height: 1.5;
+            letter-spacing: 0;
+            word-spacing: 0;
+            font-variant-ligatures: none;
+            font-feature-settings: normal;
         }
 
         .prompt .user { color: var(--vs-green); }
@@ -115,6 +162,15 @@
 
         .cmd {
             color: var(--vs-text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            letter-spacing: 0;
+            word-spacing: 0;
+            font-variant-ligatures: none;
+            font-feature-settings: normal;
+            font-weight: 400;
+            text-rendering: geometricPrecision;
         }
 
         .output {
@@ -163,7 +219,7 @@
         .item.link { color: var(--vs-cyan); }
 
         .card {
-            margin: 6px 0 0;
+            margin: 8px 0;
             background: rgba(30,41,59,0.6);
             border: 1px solid var(--vs-border-light);
             border-radius: 8px;
@@ -223,7 +279,7 @@
 
         .input-line {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 8px;
             margin-top: 0;
             padding: 0;
@@ -237,10 +293,18 @@
             border: none;
             outline: none;
             color: var(--vs-text);
-            font-family: inherit;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
+            line-height: 1.5;
+            letter-spacing: 0;
+            word-spacing: 0;
+            font-variant-ligatures: none;
+            font-feature-settings: normal;
+            font-weight: 400;
+            text-rendering: geometricPrecision;
             caret-color: var(--vs-text);
             min-width: 0;
+            padding: 0;
         }
 
         #cmdInput::placeholder { color: transparent; }
