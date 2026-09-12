@@ -251,7 +251,11 @@
             font-size: 11px;
             line-height: 1.1;
             margin: 0 0 14px;
-            overflow-x: auto;
+            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             white-space: pre;
             letter-spacing: 0;
             word-spacing: 0;
@@ -261,7 +265,9 @@
             text-rendering: geometricPrecision;
             display: block;
             text-align: left;
+            max-width: 100%;
         }
+        .ascii::-webkit-scrollbar { display: none; width: 0; height: 0; }
         .ascii .hl {
             color: var(--vs-text);
         }
