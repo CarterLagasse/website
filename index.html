@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carter Lagasse — ~/Carter-Lagasse</title>
+    <meta name="description" content="Carter Lagasse — software developer. Terminal website: projects, experience, connect (GitHub, LinkedIn, email).">
+    <meta property="og:title" content="Carter Lagasse — Terminal Website">
+    <meta property="og:description" content="Software developer — interactive terminal website. Type ls, cd, cat, open.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#020617">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-family='monospace' font-size='48' fill='%2338bdf8'>&gt;_</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -42,33 +48,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .page-header {
-            text-align: center;
-            margin-bottom: 28px;
-            animation: fadeIn 0.6s ease;
-        }
-
-        .page-header h1 {
-            font-size: 11px;
-            letter-spacing: 0.28em;
-            text-transform: uppercase;
-            color: var(--vs-dim);
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-
-        .page-header .name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            color: var(--vs-text);
-            letter-spacing: -0.02em;
-        }
-
-        .page-header .name span {
-            color: var(--vs-faint);
-            font-weight: 400;
-        }
-
         /* Professional terminal window */
         .vscode {
             width: 100%;
@@ -84,57 +63,10 @@
             flex-direction: column;
         }
 
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 44px;
-            padding: 0 14px;
-            background: #0b1222;
-            border-bottom: 1px solid var(--vs-border);
-            user-select: none;
-            flex-shrink: 0;
-        }
-
-        .panel-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .dots {
-            display: flex;
-            gap: 7px;
-        }
-
-        .dot {
-            width: 11px;
-            height: 11px;
-            border-radius: 50%;
+        .top-line {
+            height: 3px;
             background: #1e293b;
-            border: 1px solid #334155;
-        }
-
-        .dot.r { background: #ef4444; border-color: #dc2626; opacity: 0.95; }
-        .dot.y { background: #eab308; border-color: #ca8a04; opacity: 0.95; }
-        .dot.g { background: #22c55e; border-color: #16a34a; opacity: 0.95; }
-
-        .panel-title {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--vs-dim);
-            letter-spacing: 0.01em;
-        }
-
-        .panel-title span {
-            color: var(--vs-text);
-        }
-
-        .panel-right {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--vs-faint);
-            letter-spacing: 0.02em;
+            flex-shrink: 0;
         }
 
         /* Terminal body */
@@ -253,6 +185,26 @@
             text-decoration: none;
         }
         .card a:hover { text-decoration: underline; }
+        /* markdown inside cards */
+        .markdown h1 { font-size: 16px; font-weight: 600; margin: 2px 0 8px; color: #f1f5f9; }
+        .markdown h2 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; color: #e2e8f0; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
+        .markdown h3 { font-size: 13px; font-weight: 600; margin: 10px 0 4px; color: #e2e8f0; }
+        .markdown p { margin: 6px 0; color: #cbd5e1; line-height: 1.6; font-size: 13px; }
+        .markdown ul, .markdown ol { margin: 8px 0 8px 18px; color: #cbd5e1; font-size: 13px; }
+        .markdown li { margin: 4px 0; line-height: 1.5; }
+        .markdown code { background: #0b1222; border: 1px solid #1e293b; padding: 1px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #e2e8f0; }
+        .markdown pre { background: #0b1222; border: 1px solid #1e293b; padding: 10px 12px; border-radius: 6px; overflow-x: auto; margin: 10px 0; }
+        .markdown pre code { border: none; padding: 0; background: transparent; font-size: 12px; }
+        .markdown a { color: var(--vs-blue); text-decoration: none; }
+        .markdown a:hover { text-decoration: underline; }
+        .markdown blockquote { border-left: 2px solid #334155; padding-left: 10px; margin: 8px 0; color: #94a3b8; }
+        .markdown hr { border: none; border-top: 1px solid #1e293b; margin: 12px 0; }
+        .markdown strong { color: #f1f5f9; font-weight: 600; }
+        .markdown table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; display: block; overflow-x: auto; white-space: nowrap; }
+        .markdown th, .markdown td { border: 1px solid #1e293b; padding: 6px 10px; text-align: left; }
+        .markdown th { background: #0b1222; color: #e2e8f0; font-weight: 600; }
+        .markdown td { color: #cbd5e1; }
+        .markdown tr:nth-child(even) td { background: rgba(30,41,59,0.3); }
 
         .tag {
             display: inline-block;
@@ -311,170 +263,7 @@
         .ascii .hl {
             color: var(--vs-text);
         }
-        .cool-ascii {
-            font-family: 'JetBrains Mono', 'Cascadia Code', 'DejaVu Sans Mono', Consolas, monospace;
-            font-size: 8px;
-            line-height: 1;
-            letter-spacing: 0;
-            font-weight: 400;
-            color: #e4e4e7;
-            background:
-                radial-gradient(at 20% 20%, rgba(56,189,248,0.07) 0%, transparent 50%),
-                radial-gradient(at 90% 80%, rgba(34,211,238,0.06) 0%, transparent 45%),
-                rgba(39,39,42,0.32);
-            border: 1px solid #27272a;
-            border-radius: 10px;
-            padding: 12px 10px 10px;
-            margin: 0 0 10px;
-            overflow-x: auto;
-            white-space: pre;
-            display: block;
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
-            text-shadow: none;
-            font-variant-ligatures: none;
-            font-feature-settings: normal;
-            text-rendering: geometricPrecision;
-            -webkit-font-smoothing: antialiased;
-            tab-size: 4;
-        }
-        .cool-ascii::-webkit-scrollbar { height: 6px; }
-        .cool-ascii::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-        /* opencode-style brand - replaces chunky block - tighter */
-        .opencode-brand {
-            margin: 0 0 14px;
-            padding: 1px 0 0;
-            font-family: 'Inter', system-ui, sans-serif;
-            border-left: 2px solid #27272a;
-            padding-left: 10px;
-        }
-        .opencode-brand .brand-name {
-            font-size: 18px;
-            font-weight: 650;
-            letter-spacing: -0.03em;
-            line-height: 1;
-            color: #fafafa;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-transform: uppercase;
-        }
-        .opencode-brand .brand-name .accent {
-            display: flex;
-            gap: 3px;
-            flex-shrink: 0;
-        }
-        .opencode-brand .brand-name .accent i {
-            width: 7px;
-            height: 7px;
-            display: block;
-            background: #52525b;
-        }
-        .opencode-brand .brand-name .accent i:nth-child(1) { background: #e4e4e7; }
-        .opencode-brand .brand-name .accent i:nth-child(2) { background: #a1a1aa; }
-        .opencode-brand .brand-name .accent i:nth-child(3) { background: #71717a; }
-        .opencode-brand .brand-sub {
-            margin-top: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: #71717a;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .opencode-brand .brand-sub span {
-            color: #a1a1aa;
-        }
-        /* collage - Carter Lagasse made of small squares - tighter + cooler collage */
-        .collage {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 14px;
-            align-items: flex-start;
-            margin-bottom: 10px;
-            padding: 12px 14px 10px;
-            background:
-                radial-gradient(at 20% 20%, rgba(56,189,248,0.06) 0%, transparent 50%),
-                radial-gradient(at 90% 80%, rgba(34,211,238,0.05) 0%, transparent 45%),
-                rgba(39,39,42,0.22);
-            border: 1px solid #27272a;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
-            position: relative;
-            overflow: hidden;
-        }
-        .collage::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-            background-size: 14px 14px;
-            pointer-events: none;
-        }
-        .collage .word {
-            display: flex;
-            gap: 4px;
-            position: relative;
-            z-index: 1;
-        }
-        .collage .letter {
-            display: grid;
-            grid-template-columns: repeat(5, 7px);
-            grid-template-rows: repeat(6, 7px);
-            gap: 2px;
-            position: relative;
-        }
-        .collage .pixel {
-            width: 7px;
-            height: 7px;
-            border-radius: 1.5px;
-            background: transparent;
-            position: relative;
-        }
-        .collage .pixel.on {
-            background: #e4e4e7;
-            box-shadow:
-                0 1px 3px rgba(0,0,0,0.45),
-                0 0 0 1px rgba(0,0,0,0.2) inset,
-                inset 0 1px 0 rgba(255,255,255,0.25);
-            animation: collagePop 0.45s cubic-bezier(0.34,1.56,0.64,1) backwards;
-            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-            --rot: 0deg;
-        }
-        .collage .pixel.on:nth-child(3n) { background: #d4d4d8; --rot: 0.6deg; transform: rotate(var(--rot)) translateY(-0.4px); }
-        .collage .pixel.on:nth-child(5n) { background: #a1a1aa; --rot: -0.5deg; transform: rotate(var(--rot)) translateX(0.4px); }
-        .collage .pixel.on:nth-child(7n) { background: #fafafa; --rot: 0.8deg; transform: rotate(var(--rot)); box-shadow: 0 0 6px rgba(250,250,250,0.25), 0 1px 3px rgba(0,0,0,0.45); }
-        .collage .pixel.on:nth-child(11n) { background: #38bdf8; --rot: -0.7deg; transform: rotate(var(--rot)); box-shadow: 0 0 8px rgba(56,189,248,0.35), 0 1px 3px rgba(0,0,0,0.45); }
-        .collage .pixel.on:nth-child(13n) { background: #22d3ee; --rot: 0.4deg; transform: rotate(var(--rot)); }
-        .collage .pixel.on:nth-child(17n) { background: #e4e4e7; --rot: -0.9deg; transform: rotate(var(--rot)) translateY(0.5px); }
-        .collage .pixel.on:hover {
-            transform: scale(1.55) rotate(3deg) translateY(-1px) !important;
-            z-index: 5;
-            background: #38bdf8 !important;
-            box-shadow: 0 0 10px rgba(56,189,248,0.7), 0 4px 12px rgba(0,0,0,0.4) !important;
-            filter: brightness(1.15);
-        }
-        .collage .letter:hover {
-            filter: drop-shadow(0 0 6px rgba(56,189,248,0.15));
-        }
-        @keyframes collagePop {
-            from { opacity: 0; transform: scale(0.2) rotate(-12deg) translateY(6px); }
-            to { opacity: 1; transform: scale(1) rotate(var(--rot,0deg)) translateY(0); }
-        }
-        /* staggered entrance - each pixel gets incremental delay */
-        .collage .pixel.on:nth-child(1) { animation-delay: 0.02s; }
-        .collage .pixel.on:nth-child(2) { animation-delay: 0.04s; }
-        .collage .pixel.on:nth-child(3) { animation-delay: 0.06s; }
-        .collage .pixel.on:nth-child(4) { animation-delay: 0.08s; }
-        .collage .pixel.on:nth-child(5) { animation-delay: 0.10s; }
-        .collage .pixel.on:nth-child(6) { animation-delay: 0.12s; }
-        .collage .pixel.on:nth-child(7) { animation-delay: 0.14s; }
-        .collage .pixel.on:nth-child(8) { animation-delay: 0.16s; }
-        .collage .pixel.on:nth-child(9) { animation-delay: 0.18s; }
-        .collage .pixel.on:nth-child(10) { animation-delay: 0.20s; }
+
 
         .help-grid {
             display: grid;
@@ -490,36 +279,20 @@
 
         @media (max-width: 640px) {
             body { padding: 24px 12px 32px; }
-            .vscode { max-width: 100%; border-radius: 10px; }
+            .vscode { max-width: 100%; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03) inset; }
             .body { padding: 14px 14px 16px; font-size: 12.5px; }
             .ascii { font-size: 7.5px; }
-            .panel-header { height: 40px; padding: 0 12px; }
+            .panel-header { height: 36px; padding: 0 12px; }
             .panel-title { font-size: 11px; }
-            .cool-ascii { font-size: 5px; padding: 8px 6px 6px; }
-            .collage { gap: 6px 10px; }
-            .collage .word { gap: 3px; }
-            .collage .letter {
-                grid-template-columns: repeat(5, 5px);
-                grid-template-rows: repeat(6, 5px);
-                gap: 1.5px;
-            }
-            .collage .pixel { width: 5px; height: 5px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
 <body>
     <div class="vscode">
-        <div class="panel-header">
-            <div class="panel-left">
-                <div class="dots">
-                    <div class="dot r"></div>
-                    <div class="dot y"></div>
-                    <div class="dot g"></div>
-                </div>
-                <div class="panel-title">carter@website: <span>~/Carter-Lagasse</span></div>
-            </div>
-            <div class="panel-right">zsh</div>
-        </div>
+        <div class="top-line" aria-hidden="true"></div>
 
         <div class="terminal" id="terminal">
             <div class="body" id="termBody">
@@ -543,15 +316,13 @@ const FS = {
                 "project-atlas/": { _desc: "Placeholder — data visualization toolkit for large datasets", _tags: ["React","D3"], _link: "#" },
                 "cli-utils/": { _desc: "Placeholder — collection of productivity CLI tools", _tags: ["Python","CLI"], _link: "#" }
             },
-            "experience/": {
-                "README.md": "# Experience\n\nAdd internships, work, or research here.\n\nExample:\n- Software Intern @ Company — Summer 2025\n- Built X, improved Y by Z%",
-            },
-            "README.md": "# Carter Lagasse\n\nWelcome to my terminal portfolio!\n\nTry:\n  ls, cd <folder>, cat <file>, open <folder>, help"
+            "experience/": {},
+            "README.md": "# Carter Lagasse — Terminal Website\n\nEverything is a file. Click anything blue.\n\n- `connect/` — GitHub, LinkedIn, email\n- `projects/` — live GitHub repos\n- `experience/` — work & education"
         }
     }
 };
 
-let cwd = ["~", "Carter-Lagasse/"];
+let cwd = ["~"];
 let history = [];
 let histIdx = -1;
 
@@ -587,11 +358,12 @@ async function loadGitHubProjects() {
                 _treeLoading: false
             };
         }
-        // replace live
+        // replace live but keep local README.md so folder stays readable
         const node = getNode(projectsPath);
         if (node) {
-            // clear and assign
+            const keepReadme = node["README.md"];
             Object.keys(node).forEach(k => delete node[k]);
+            if (keepReadme) node["README.md"] = keepReadme;
             Object.assign(node, projects);
             console.log(`[projects] loaded ${Object.keys(projects).length} repos from GitHub`);
         }
@@ -651,8 +423,119 @@ function renderLS(node) {
     return html;
 }
 
+function mdToHtml(md) {
+    const codeBlocks = [];
+    let s = md.replace(/```(?:\w+)?\n([\s\S]*?)```/g, (m, code) => {
+        const idx = codeBlocks.length;
+        codeBlocks.push(`<pre><code>${code.trim().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</code></pre>`);
+        return `@@CODEBLOCK${idx}@@`;
+    });
+    s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const inlineCodes = [];
+    s = s.replace(/`([^`]+?)`/g, (m, code) => {
+        const idx = inlineCodes.length;
+        inlineCodes.push(`<code>${code}</code>`);
+        return `@@INLINE${idx}@@`;
+    });
+    const blocks = s.split(/\n{2,}/);
+    const out = blocks.map(block => {
+        let b = block.trim();
+        if (!b) return "";
+        if (/^@@CODEBLOCK\d+@@$/.test(b)) {
+            const idx = parseInt(b.match(/\d+/)[0], 10);
+            return codeBlocks[idx];
+        }
+        if (/^######\s+(.*)/.test(b)) return b.replace(/^######\s+(.*)/, '<h6>$1</h6>');
+        if (/^#####\s+(.*)/.test(b)) return b.replace(/^#####\s+(.*)/, '<h5>$1</h5>');
+        if (/^####\s+(.*)/.test(b)) return b.replace(/^####\s+(.*)/, '<h4>$1</h4>');
+        if (/^###\s+(.*)/.test(b)) return b.replace(/^###\s+(.*)/, '<h3>$1</h3>');
+        if (/^##\s+(.*)/.test(b)) return b.replace(/^##\s+(.*)/, '<h2>$1</h2>');
+        if (/^#\s+(.*)/.test(b)) return b.replace(/^#\s+(.*)/, '<h1>$1</h1>');
+        if (/^---\s*$/.test(b)) return '<hr>';
+        if (/^>\s+/.test(b)) {
+            const inner = b.replace(/^>\s+/gm, '').replace(/\n/g, ' ');
+            return `<blockquote>${inner}</blockquote>`;
+        }
+        // table: header | separator | rows
+        if (b.includes('|')) {
+            const tLines = b.split('\n').filter(l => l.trim().length > 0);
+            if (tLines.length >= 2 && tLines[0].includes('|') && /^\s*\|?(\s*:?-+:?\s*\|)+\s*:?-+:?\s*\|?\s*$/.test(tLines[1])) {
+                const headerCells = tLines[0].split('|').map(c => c.trim()).filter(c => c.length > 0);
+                let html = '<table><thead><tr>';
+                headerCells.forEach(cell => {
+                    let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/`([^`]+?)`/g, '<code>$1</code>');
+                    c = c.replace(/@@INLINE\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return inlineCodes[idx]; });
+                    html += `<th>${c}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                for (let i = 2; i < tLines.length; i++) {
+                    const rowCells = tLines[i].split('|').map(c => c.trim()).filter(c => c.length > 0);
+                    if (!rowCells.length) continue;
+                    html += '<tr>';
+                    rowCells.forEach(cell => {
+                        let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/`([^`]+?)`/g, '<code>$1</code>');
+                        c = c.replace(/@@INLINE\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return inlineCodes[idx]; });
+                        html += `<td>${c}</td>`;
+                    });
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+                return html;
+            }
+        }
+        const lines = b.split(/\n/);
+        const isList = lines.every(l => /^\s*([-*]|\d+\.)\s+/.test(l));
+        if (isList) {
+            const isOrdered = /^\s*\d+\./.test(lines[0]);
+            const tag = isOrdered ? 'ol' : 'ul';
+            const items = lines.map(l => l.replace(/^\s*(?:[-*]|\d+\.)\s+/, '').trim()).map(t => {
+                let tt = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                tt = tt.replace(/@@INLINE\d+@@/g, (m) => {
+                    const idx = parseInt(m.match(/\d+/)[0], 10);
+                    return inlineCodes[idx];
+                });
+                return `<li>${tt}</li>`;
+            }).join('');
+            return `<${tag}>${items}</${tag}>`;
+        }
+        let q = b.replace(/\n/g, ' ');
+        q = q.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        q = q.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        q = q.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+        q = q.replace(/_([^_\n]+?)_/g, '<em>$1</em>');
+        q = q.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        q = q.replace(/@@INLINE\d+@@/g, (m) => {
+            const idx = parseInt(m.match(/\d+/)[0], 10);
+            return inlineCodes[idx];
+        });
+        return `<p>${q}</p>`;
+    }).filter(Boolean);
+    let html = out.join("\n");
+    html = html.replace(/@@INLINE\d+@@/g, (m) => {
+        const idx = parseInt(m.match(/\d+/)[0], 10);
+        return inlineCodes[idx];
+    });
+    html = html.replace(/@@CODEBLOCK\d+@@/g, (m) => {
+        const idx = parseInt(m.match(/\d+/)[0], 10);
+        return codeBlocks[idx];
+    });
+    html = html.replace(/<h([1-6])>(.*?)<\/h\1>/g, (m, lvl, inner) => {
+        let t = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        t = t.replace(/@@INLINE\d+@@/g, (mm) => {
+            const idx = parseInt(mm.match(/\d+/)[0], 10);
+            return inlineCodes[idx];
+        });
+        return `<h${lvl}>${t}</h${lvl}>`;
+    });
+    return html;
+}
 function renderCat(name, nodeVal) {
+    const isMd = name.toLowerCase().endsWith(".md") || name.toLowerCase().endsWith(".markdown");
     if (typeof nodeVal === "string") {
+        if (isMd) {
+            const html = mdToHtml(nodeVal);
+            return `<div class="card markdown" style="max-height:60vh; overflow:auto;">${html}</div>`;
+        }
         const esc = nodeVal.replace(/</g,"&lt;").replace(/>/g,"&gt;");
         return `<div class="card" style="white-space:pre-wrap; max-height:60vh; overflow:auto;">${esc}</div>`;
     }
@@ -1086,22 +969,19 @@ function splitArgs(str) {
 }
 
 function escapeHtml(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
 function updatePrompt() {
     const p = document.querySelector('#inputLine .prompt');
     if (p) p.innerHTML = `<span class="user">carter</span><span class="at">@</span><span class="host">website</span><span class="colon">:</span><span class="path">${cwdString()}</span><span class="dollar">$</span>`;
 }
-function updateHeader() {
-    const h = document.querySelector('.panel-title span');
-    if (h) h.textContent = cwdString();
-}
+function updateHeader() {}
 
 function initDemo() {
     const sequence = [
         "cd Carter-Lagasse",
-        "ls",
+        "cat README.md",
         "cd connect",
         "ls"
     ];
@@ -1191,7 +1071,7 @@ function setupInput() {
             const parts = splitArgs(val);
             const last = parts[parts.length - 1] || "";
             const node = getNode(cwd);
-            const candidates = Object.keys(node).filter(k => k.toLowerCase().startsWith(last.toLowerCase()));
+            const candidates = Object.keys(node).filter(k => !k.startsWith("_") && k.toLowerCase().startsWith(last.toLowerCase()));
             if (candidates.length === 1) {
                 const full = val.slice(0, val.lastIndexOf(last)) + candidates[0];
                 input.value = full + (candidates[0].endsWith("/") ? "" : " ");
