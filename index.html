@@ -205,6 +205,8 @@
         .markdown th { background: #0b1222; color: #e2e8f0; font-weight: 600; }
         .markdown td { color: #cbd5e1; }
         .markdown tr:nth-child(even) td { background: rgba(30,41,59,0.3); }
+        .markdown img { max-width: 100%; height: auto; display: block; border-radius: 6px; margin: 8px 0; border: 1px solid #1e293b; }
+        .markdown img + em, .markdown img + span { font-size: 11px; color: var(--vs-faint); }
 
         .tag {
             display: inline-block;
@@ -404,6 +406,58 @@ function isInRepo(pathArr) {
     return pathArr.length >= 4 && pathArr[2] === "projects/" && pathArr[3];
 }
 
+// --- helpers to fix relative markdown images/links (bad gateway) ---
+function isAbsoluteUrl(u) {
+    return /^(?:[a-z][a-z0-9+.-]*:|\/\/|data:|#|mailto:)/i.test(u);
+}
+function normalizePath(p) {
+    const segs = p.split('/');
+    const out = [];
+    for (const s of segs) {
+        if (s === '' || s === '.') continue;
+        if (s === '..') { if (out.length) out.pop(); }
+        else out.push(s);
+    }
+    return out.join('/');
+}
+function resolveMdPath(rel, baseDir) {
+    const cleaned = rel.replace(/^<|>$/g, '').trim();
+    if (cleaned.startsWith('/')) return normalizePath(cleaned.slice(1));
+    if (!baseDir) return normalizePath(cleaned);
+    return normalizePath(baseDir + '/' + cleaned);
+}
+function splitUrlSuffix(u) {
+    const q = u.indexOf('?');
+    const h = u.indexOf('#');
+    let at = -1;
+    if (q !== -1 && h !== -1) at = Math.min(q, h);
+    else if (q !== -1) at = q;
+    else if (h !== -1) at = h;
+    if (at === -1) return { path: u, suffix: '' };
+    return { path: u.slice(0, at), suffix: u.slice(at) };
+}
+function buildRawUrl(repo, branch, resolved) {
+    return `https://raw.githubusercontent.com/CarterLagasse/${repo}/${branch}/${resolved.split('/').map(encodeURIComponent).join('/')}`;
+}
+function buildBlobUrl(repo, branch, resolved, suffix) {
+    return `https://github.com/CarterLagasse/${repo}/blob/${branch}/${resolved.split('/').map(encodeURIComponent).join('/')}${suffix||''}`;
+}
+function rewriteMdUrl(url, ctx) {
+    if (!ctx || isAbsoluteUrl(url)) return url;
+    const { path, suffix } = splitUrlSuffix(url.trim().split(/\s+/)[0].replace(/^["']|["']$/g,'').replace(/^<|>$/g,''));
+    if (!path || isAbsoluteUrl(path) || path.startsWith('#')) return url;
+    const resolved = resolveMdPath(path, ctx.dir);
+    return buildBlobUrl(ctx.repo, ctx.branch, resolved, suffix);
+}
+function rewriteMdImageSrc(src, ctx) {
+    if (!ctx || isAbsoluteUrl(src)) return src;
+    const rawPath = src.trim().split(/\s+/)[0].replace(/^["']|["']$/g,'').replace(/^<|>$/g,'');
+    const { path } = splitUrlSuffix(rawPath);
+    if (!path || isAbsoluteUrl(path)) return src;
+    const resolved = resolveMdPath(path, ctx.dir);
+    return buildRawUrl(ctx.repo, ctx.branch, resolved);
+}
+
 function renderLS(node) {
     const entries = Object.keys(node).filter(k => !k.startsWith("_"));
     if (entries.length === 0) {
@@ -423,12 +477,35 @@ function renderLS(node) {
     return html;
 }
 
-function mdToHtml(md) {
+function mdToHtml(md, ctx) {
+    const hasCtx = ctx && ctx.repo && ctx.branch;
     const codeBlocks = [];
     let s = md.replace(/```(?:\w+)?\n([\s\S]*?)```/g, (m, code) => {
         const idx = codeBlocks.length;
         codeBlocks.push(`<pre><code>${code.trim().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</code></pre>`);
         return `@@CODEBLOCK${idx}@@`;
+    });
+    // capture raw HTML <img> before escaping so relative src can be fixed to raw.githubusercontent.com
+    const htmlImgBlocks = [];
+    s = s.replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, (m, src) => {
+        const altMatch = m.match(/alt=["']([^"']*)["']/i);
+        const alt = altMatch ? altMatch[1] : '';
+        const escAlt = alt.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        let html;
+        if (isAbsoluteUrl(src) || !hasCtx) {
+            const safe = src.replace(/"/g,'&quot;');
+            html = `<a href="${safe}" target="_blank" rel="noopener"><img src="${safe}" alt="${escAlt}" loading="lazy"></a>`;
+        } else {
+            const { path, suffix } = splitUrlSuffix(src.trim());
+            const resolved = resolveMdPath(path, hasCtx ? ctx.dir : '');
+            const raw = buildRawUrl(ctx.repo, ctx.branch, resolved);
+            const blob = buildBlobUrl(ctx.repo, ctx.branch, resolved, suffix);
+            const escRaw = raw.replace(/"/g,'&quot;');
+            const escBlob = blob.replace(/"/g,'&quot;');
+            html = `<a href="${escBlob}" target="_blank" rel="noopener"><img src="${escRaw}" alt="${escAlt}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'color:var(--vs-dim);font-size:12px\\'>[image — <a href=\\'${escBlob}\\' target=\\'_blank\\' rel=\\'noopener\\' style=\\'color:var(--vs-blue)\\'>open on GitHub</a>]</span>')"></a>`;
+        }
+        htmlImgBlocks.push(html);
+        return `@@HTMLIMG${htmlImgBlocks.length-1}@@`;
     });
     s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     const inlineCodes = [];
@@ -437,6 +514,50 @@ function mdToHtml(md) {
         inlineCodes.push(`<code>${code}</code>`);
         return `@@INLINE${idx}@@`;
     });
+
+    function fmtInline(str) {
+        // images ![alt](src) -> wrap raw image in link to blob (so bad-gateway relative paths now point to repo)
+        str = str.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, srcRaw) => {
+            const urlPart = srcRaw.trim().split(/\s+/)[0].replace(/^["']|["']$/g,'').replace(/^<|>$/g,'');
+            if (!urlPart) return m;
+            const escAlt = alt.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            if (isAbsoluteUrl(urlPart) || !hasCtx) {
+                const safe = urlPart.replace(/"/g,'&quot;');
+                return `<a href="${safe}" target="_blank" rel="noopener"><img src="${safe}" alt="${escAlt}" loading="lazy"></a>`;
+            }
+            const { path, suffix } = splitUrlSuffix(urlPart);
+            if (!path || isAbsoluteUrl(path) || path.startsWith('#')) {
+                const safe = urlPart.replace(/"/g,'&quot;');
+                return `<a href="${safe}" target="_blank" rel="noopener"><img src="${safe}" alt="${escAlt}" loading="lazy"></a>`;
+            }
+            const resolved = resolveMdPath(path, ctx.dir);
+            const raw = buildRawUrl(ctx.repo, ctx.branch, resolved);
+            const blob = buildBlobUrl(ctx.repo, ctx.branch, resolved, suffix);
+            const escRaw = raw.replace(/"/g,'&quot;');
+            const escBlob = blob.replace(/"/g,'&quot;');
+            return `<a href="${escBlob}" target="_blank" rel="noopener"><img src="${escRaw}" alt="${escAlt}" loading="lazy" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'color:var(--vs-dim);font-size:12px\\'>[image — <a href=\\'${escBlob}\\' target=\\'_blank\\' rel=\\'noopener\\' style=\\'color:var(--vs-blue)\\'>open on GitHub</a>]</span>')"></a>`;
+        });
+        // links [text](url) — relative now goes to github blob instead of bad gateway on Pages
+        str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, text, urlRaw) => {
+            const rawUrl = urlRaw.trim().split(/\s+/)[0].replace(/^["']|["']$/g,'').replace(/^<|>$/g,'');
+            if (!rawUrl) return m;
+            const { path, suffix } = splitUrlSuffix(rawUrl);
+            if (isAbsoluteUrl(path) || path.startsWith('#')) {
+                const safe = (path + suffix).replace(/"/g,'&quot;');
+                return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+            }
+            if (hasCtx) {
+                const resolved = resolveMdPath(path, ctx.dir);
+                const blob = buildBlobUrl(ctx.repo, ctx.branch, resolved, suffix);
+                const safe = blob.replace(/"/g,'&quot;');
+                return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+            }
+            const safe = (path + suffix).replace(/"/g,'&quot;');
+            return `<a href="${safe}" target="_blank" rel="noopener">${text}</a>`;
+        });
+        return str;
+    }
+
     const blocks = s.split(/\n{2,}/);
     const out = blocks.map(block => {
         let b = block.trim();
@@ -445,16 +566,54 @@ function mdToHtml(md) {
             const idx = parseInt(b.match(/\d+/)[0], 10);
             return codeBlocks[idx];
         }
-        if (/^######\s+(.*)/.test(b)) return b.replace(/^######\s+(.*)/, '<h6>$1</h6>');
-        if (/^#####\s+(.*)/.test(b)) return b.replace(/^#####\s+(.*)/, '<h5>$1</h5>');
-        if (/^####\s+(.*)/.test(b)) return b.replace(/^####\s+(.*)/, '<h4>$1</h4>');
-        if (/^###\s+(.*)/.test(b)) return b.replace(/^###\s+(.*)/, '<h3>$1</h3>');
-        if (/^##\s+(.*)/.test(b)) return b.replace(/^##\s+(.*)/, '<h2>$1</h2>');
-        if (/^#\s+(.*)/.test(b)) return b.replace(/^#\s+(.*)/, '<h1>$1</h1>');
+        if (/^@@HTMLIMG\d+@@$/.test(b)) {
+            const idx = parseInt(b.match(/\d+/)[0], 10);
+            return htmlImgBlocks[idx];
+        }
+        if (/^######\s+(.*)/.test(b)) {
+            const inner = b.replace(/^######\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h6>${h}</h6>`;
+        }
+        if (/^#####\s+(.*)/.test(b)) {
+            const inner = b.replace(/^#####\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h5>${h}</h5>`;
+        }
+        if (/^####\s+(.*)/.test(b)) {
+            const inner = b.replace(/^####\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h4>${h}</h4>`;
+        }
+        if (/^###\s+(.*)/.test(b)) {
+            const inner = b.replace(/^###\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h3>${h}</h3>`;
+        }
+        if (/^##\s+(.*)/.test(b)) {
+            const inner = b.replace(/^##\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h2>${h}</h2>`;
+        }
+        if (/^#\s+(.*)/.test(b)) {
+            const inner = b.replace(/^#\s+(.*)/, '$1');
+            let h = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            h = fmtInline(h);
+            return `<h1>${h}</h1>`;
+        }
         if (/^---\s*$/.test(b)) return '<hr>';
         if (/^>\s+/.test(b)) {
             const inner = b.replace(/^>\s+/gm, '').replace(/\n/g, ' ');
-            return `<blockquote>${inner}</blockquote>`;
+            let q = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+            q = fmtInline(q);
+            q = q.replace(/@@INLINE\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return inlineCodes[idx]; });
+            q = q.replace(/@@HTMLIMG\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return htmlImgBlocks[idx]; });
+            return `<blockquote>${q}</blockquote>`;
         }
         // table: header | separator | rows
         if (b.includes('|')) {
@@ -463,8 +622,11 @@ function mdToHtml(md) {
                 const headerCells = tLines[0].split('|').map(c => c.trim()).filter(c => c.length > 0);
                 let html = '<table><thead><tr>';
                 headerCells.forEach(cell => {
-                    let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/`([^`]+?)`/g, '<code>$1</code>');
+                    let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+                    c = fmtInline(c);
+                    c = c.replace(/`([^`]+?)`/g, '<code>$1</code>');
                     c = c.replace(/@@INLINE\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return inlineCodes[idx]; });
+                    c = c.replace(/@@HTMLIMG\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return htmlImgBlocks[idx]; });
                     html += `<th>${c}</th>`;
                 });
                 html += '</tr></thead><tbody>';
@@ -473,8 +635,11 @@ function mdToHtml(md) {
                     if (!rowCells.length) continue;
                     html += '<tr>';
                     rowCells.forEach(cell => {
-                        let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/`([^`]+?)`/g, '<code>$1</code>');
+                        let c = cell.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+                        c = fmtInline(c);
+                        c = c.replace(/`([^`]+?)`/g, '<code>$1</code>');
                         c = c.replace(/@@INLINE\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return inlineCodes[idx]; });
+                        c = c.replace(/@@HTMLIMG\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return htmlImgBlocks[idx]; });
                         html += `<td>${c}</td>`;
                     });
                     html += '</tr>';
@@ -489,11 +654,13 @@ function mdToHtml(md) {
             const isOrdered = /^\s*\d+\./.test(lines[0]);
             const tag = isOrdered ? 'ol' : 'ul';
             const items = lines.map(l => l.replace(/^\s*(?:[-*]|\d+\.)\s+/, '').trim()).map(t => {
-                let tt = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                let tt = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>');
+                tt = fmtInline(tt);
                 tt = tt.replace(/@@INLINE\d+@@/g, (m) => {
                     const idx = parseInt(m.match(/\d+/)[0], 10);
                     return inlineCodes[idx];
                 });
+                tt = tt.replace(/@@HTMLIMG\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return htmlImgBlocks[idx]; });
                 return `<li>${tt}</li>`;
             }).join('');
             return `<${tag}>${items}</${tag}>`;
@@ -503,11 +670,17 @@ function mdToHtml(md) {
         q = q.replace(/__(.+?)__/g, '<strong>$1</strong>');
         q = q.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
         q = q.replace(/_([^_\n]+?)_/g, '<em>$1</em>');
-        q = q.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        q = fmtInline(q);
         q = q.replace(/@@INLINE\d+@@/g, (m) => {
             const idx = parseInt(m.match(/\d+/)[0], 10);
             return inlineCodes[idx];
         });
+        q = q.replace(/@@HTMLIMG\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return htmlImgBlocks[idx]; });
+        q = q.replace(/@@CODEBLOCK\d+@@/g, (m) => { const idx = parseInt(m.match(/\d+/)[0], 10); return codeBlocks[idx]; });
+        // if block is just a html image placeholder paragraph, unwrap p
+        if (/^<a href=/.test(q) && q.includes('<img')) {
+            // keep as p but allow block containing only image
+        }
         return `<p>${q}</p>`;
     }).filter(Boolean);
     let html = out.join("\n");
@@ -519,13 +692,9 @@ function mdToHtml(md) {
         const idx = parseInt(m.match(/\d+/)[0], 10);
         return codeBlocks[idx];
     });
-    html = html.replace(/<h([1-6])>(.*?)<\/h\1>/g, (m, lvl, inner) => {
-        let t = inner.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/__(.+?)__/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-        t = t.replace(/@@INLINE\d+@@/g, (mm) => {
-            const idx = parseInt(mm.match(/\d+/)[0], 10);
-            return inlineCodes[idx];
-        });
-        return `<h${lvl}>${t}</h${lvl}>`;
+    html = html.replace(/@@HTMLIMG\d+@@/g, (m) => {
+        const idx = parseInt(m.match(/\d+/)[0], 10);
+        return htmlImgBlocks[idx];
     });
     return html;
 }
@@ -533,7 +702,16 @@ function renderCat(name, nodeVal) {
     const isMd = name.toLowerCase().endsWith(".md") || name.toLowerCase().endsWith(".markdown");
     if (typeof nodeVal === "string") {
         if (isMd) {
-            const html = mdToHtml(nodeVal);
+            let ctx = null;
+            const repoKey = getRepoKey(cwd);
+            if (repoKey) {
+                const repoNode = getNode(["~","Carter-Lagasse/","projects/", repoKey]);
+                const branch = repoNode ? (repoNode._branch || "main") : "main";
+                const repo = repoKey.replace(/\/$/,'');
+                const baseDir = cwd.slice(4).join("").replace(/\/$/,'');
+                ctx = { repo, branch, dir: baseDir };
+            }
+            const html = mdToHtml(nodeVal, ctx);
             return `<div class="card markdown" style="max-height:60vh; overflow:auto;">${html}</div>`;
         }
         const esc = nodeVal.replace(/</g,"&lt;").replace(/>/g,"&gt;");
