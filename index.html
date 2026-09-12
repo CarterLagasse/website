@@ -283,6 +283,30 @@
         .help-grid dt { color: var(--vs-blue); }
         .help-grid dd { color: var(--vs-dim); }
 
+        .site-footer {
+            margin-top: 18px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 13px;
+            color: var(--vs-dim);
+            flex-wrap: wrap;
+        }
+        .site-footer a {
+            color: var(--vs-dim);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            padding-bottom: 1px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .site-footer a:hover {
+            color: var(--vs-blue);
+            border-bottom-color: rgba(56,189,248,0.4);
+        }
+        .site-footer .sep { color: var(--vs-faint); opacity: 0.6; }
+
         @keyframes fadeIn { from { opacity:0; transform: translateY(4px)} to {opacity:1; transform: translateY(0)} }
 
         @media (max-width: 640px) {
@@ -309,6 +333,13 @@
         </div>
     </div>
 
+    <nav class="site-footer" aria-label="Contact links">
+        <a href="https://github.com/CarterLagasse" target="_blank" rel="noopener">GitHub</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="https://www.linkedin.com/in/carter-lagasse/" target="_blank" rel="noopener">LinkedIn</a>
+        <span class="sep" aria-hidden="true">·</span>
+        <a href="mailto:carter.lagasse@gmail.com">Email</a>
+    </nav>
 
 <script>
 const FS = {
