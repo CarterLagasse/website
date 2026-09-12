@@ -759,7 +759,6 @@ function execCommand(raw) {
                 <dt>open &lt;name&gt;</dt><dd>open link — e.g. <code>open github</code></dd>
                 <dt>pwd</dt><dd>print working directory</dd>
                 <dt>clear</dt><dd>clear terminal</dd>
-                <dt>whoami</dt><dd>about carter</dd>
             </div>`;
             break;
         case "ls":
@@ -806,9 +805,6 @@ function execCommand(raw) {
             break;
         case "pwd":
             out = cwdString();
-            break;
-        case "whoami":
-            out = `<div class="card"><div class="card-title">Carter Lagasse</div><p>Software developer · builder · terminal enthusiast<br>Use <code>ls</code> and <code>cd connect</code> to get in touch.</p></div>`;
             break;
         case "clear":
             termBody.querySelectorAll('.block').forEach(b => b.remove());
