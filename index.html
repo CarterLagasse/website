@@ -1476,44 +1476,73 @@ function initDemo() {
     input.disabled = true;
 
     let idx = 0;
+    let demoDone = false;
+    let timers = [];
+    const addTimer = (t) => { timers.push(t); return t; };
+    const clearTimers = () => { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; };
+
+    // Hand the terminal over to the user — runs exactly once, whether the
+    // animation finishes naturally or the user takes over early.
+    function takeOver() {
+        if (demoDone) return;
+        demoDone = true;
+        clearTimers();
+        termBody.removeEventListener('click', onTermClick);
+        window.removeEventListener('keydown', onWindowKey);
+        const finalInput = document.getElementById('cmdInput');
+        if (finalInput) {
+            finalInput.disabled = false;
+            finalInput.value = "";
+            finalInput.focus({ preventScroll: true });
+        }
+        setupInput();
+    }
+
+    // Skip triggers: click inside the terminal, or a keypress while the
+    // demo prompt holds focus. Neither scrolls the page.
+    function onTermClick() { takeOver(); }
+    function onWindowKey() {
+        const inp = document.getElementById('cmdInput');
+        if (inp && document.activeElement === inp) takeOver();
+    }
+    termBody.addEventListener('click', onTermClick);
+    window.addEventListener('keydown', onWindowKey);
 
     function typeAtPrompt(text, speed, cb) {
         const inp = document.getElementById('cmdInput');
         inp.disabled = false;
         inp.value = "";
-        inp.focus();
+        inp.focus({ preventScroll: true });
         let i = 0;
-        const iv = setInterval(() => {
+        const iv = addTimer(setInterval(() => {
             inp.value = text.slice(0, ++i);
             try { inp.setSelectionRange(i, i); } catch {}
             if (i >= text.length) {
                 clearInterval(iv);
-                setTimeout(cb, 260);
+                addTimer(setTimeout(cb, 260));
             }
-        }, speed);
+        }, speed));
     }
 
     function next() {
+        if (demoDone) return;
         if (idx >= sequence.length) {
-            const finalInput = document.getElementById('cmdInput');
-            finalInput.disabled = false;
-            finalInput.value = "";
-            finalInput.focus();
-            setupInput();
+            takeOver();
             return;
         }
         const cmd = sequence[idx];
         typeAtPrompt(cmd, 38, () => {
+            if (demoDone) return;
             execCommand(cmd);
             const inp = document.getElementById('cmdInput');
             inp.disabled = true;
             inp.value = "";
             idx++;
-            setTimeout(next, 380);
+            addTimer(setTimeout(next, 380));
         });
     }
 
-    setTimeout(next, 600);
+    addTimer(setTimeout(next, 600));
 }
 
 function setupInput() {
@@ -1555,12 +1584,36 @@ function setupInput() {
     });
     termBody.addEventListener('click', (e) => {
         if (e.target.closest('.item') || e.target.closest('a')) return;
-        input.focus();
+        input.focus({ preventScroll: true });
     });
-    input.focus();
+    input.focus({ preventScroll: true });
 }
 
-initDemo();
+// Start the intro animation only once the user scrolls the terminal into
+// view — never scroll the page to it ourselves.
+const terminalWrap = document.querySelector('.terminal-wrap');
+let demoStarted = false;
+let demoObserver = null;
+
+function startDemoOnce() {
+    if (demoStarted) return;
+    demoStarted = true;
+    if (demoObserver) demoObserver.disconnect();
+    initDemo();
+}
+
+if (terminalWrap) {
+    // Fires when the terminal's top edge crosses into the top 80% of the
+    // viewport (i.e. the user scrolled near enough), once.
+    demoObserver = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) startDemoOnce();
+    }, { threshold: 0, rootMargin: '0px 0px -20% 0px' });
+    demoObserver.observe(terminalWrap);
+} else {
+    // Safety net: if the wrapper is missing, start immediately so the
+    // terminal still becomes interactive.
+    startDemoOnce();
+}
 </script>
 </body>
 </html>
