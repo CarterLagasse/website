@@ -1,0 +1,10 @@
+# Archived previous terminal version (kept locally, not tracked)
+index_v1.html
+index_v2.html
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
