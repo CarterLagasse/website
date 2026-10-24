@@ -417,6 +417,12 @@ body {
 }
 .card-section {
     margin-bottom: 56px;
+    /* leave room for the sticky top bar when jumping to these via nav links */
+    scroll-margin-top: 72px;
+}
+/* nav "Terminal" link targets the inner terminal box */
+#terminal {
+    scroll-margin-top: 72px;
 }
 .project-grid {
     display: grid;
