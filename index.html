@@ -430,7 +430,8 @@ body {
     gap: 16px;
 }
 .project-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -460,15 +461,7 @@ body {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-}
-/* Experience cards: pin the skill tags to the bottom of the card */
-#experience .project-card {
-    display: flex;
-    flex-direction: column;
-}
-#experience .project-card .tags {
     margin-top: auto;
-    padding-top: 12px;
 }
 .project-card .tag {
     font-size: 11px;
@@ -550,7 +543,7 @@ body {
         <section id="projects" class="card-section">
             <h2>Featured Projects</h2>
             <div class="project-grid">
-                <a href="#" class="project-card">
+                <a href="https://github.com/CarterLagasse/catanatron-agents" target="_blank" rel="noopener" class="project-card">
                     <h3>Settlers of Catan Agents & Simulator</h3>
                     <p>Developing novel Catan agents and optimized simulator from Catanatron.</p>
                     <div class="tags">
@@ -560,20 +553,20 @@ body {
                         <span class="tag">UI</span>
                     </div>
                 </a>
+                <a href="https://github.com/CarterLagasse/jarvis" target="_blank" rel="noopener" class="project-card">
+                    <h3>Jarvis: Push-to-Talk Voice Assistant</h3>
+                    <p>Hold a key, talk, release. Local speech-to-text, smart LLM routing, and live tools, audio response with local TTS.</p>
+                    <div class="tags">
+                        <span class="tag">LLM Integration</span>
+                        <span class="tag">Tool Use</span>
+                    </div>
+                </a>
                 <a href="https://github.com/CarterLagasse/NotificationDashboard" target="_blank" rel="noopener" class="project-card">
                     <h3>Personalized Notification Dashboard</h3>
                     <p>Centralized notifications tailored to your workflow.</p>
                     <div class="tags">
                         <span class="tag">React</span>
                         <span class="tag">Webhooks</span>
-                    </div>
-                </a>
-                <a href="https://github.com/CarterLagasse/anthropeum" target="_blank" rel="noopener" class="project-card">
-                    <h3>Anthropeum Stats Tracker &amp; Analysis</h3>
-                    <p>Stats tracking and analysis for Anthropeum.</p>
-                    <div class="tags">
-                        <span class="tag">TypeScript</span>
-                        <span class="tag">Analytics</span>
                     </div>
                 </a>
             </div>
