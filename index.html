@@ -476,8 +476,8 @@ a:focus-visible {
 .proj-row .desc { margin-top: 3px; max-width: 62ch; font-size: 14.5px; line-height: 1.6; }
 .proj-row .proj-meta { margin-top: 6px; font-size: 12.5px; color: var(--c-mute); }
 .proj-links { display: flex; gap: 14px; padding-top: 1px; font-size: 14px; white-space: nowrap; }
-.proj-links a { color: var(--c-accent); text-decoration: var(--c-link-deco); text-underline-offset: 3px; }
-.proj-links a:hover { text-decoration: underline; }
+.proj-links a, .proj-row .desc a { color: var(--c-accent); text-decoration: var(--c-link-deco); text-underline-offset: 3px; }
+.proj-links a:hover, .proj-row .desc a:hover { text-decoration: underline; }
 
 .section .lead { margin: -22px 0 26px; font-size: 15.5px; }
 .terminal-band .vscode { border: 2px solid var(--c-accent-deep); box-shadow: 6px 6px 0 var(--c-accent-deep); }
@@ -594,7 +594,7 @@ a:focus-visible {
                     <div>
                         <h3>Settlers of Catan Agents &amp; Simulator</h3>
                         <p class="desc">Developing novel Catan agents and an optimized simulator from Catanatron. Play in the browser against PSRO and PPO agents trained by self-play.</p>
-                        <p class="proj-meta">Agent Dev, PPO, Simulation, UI</p>
+                        <p class="proj-meta"> RL Agents, JAX, Simulation, UI</p>
                     </div>
                     <div class="proj-links"><a href="https://catanatron-agents.onrender.com" target="_blank" rel="noopener">Live site</a><a href="https://github.com/CarterLagasse/catanatron-agents" target="_blank" rel="noopener">GitHub</a></div>
                 </div>
@@ -602,8 +602,8 @@ a:focus-visible {
                     <a class="proj-icon" href="https://carterlagasse.github.io/ArtifactGuessr/" target="_blank" rel="noopener"><img src="assets/artifactguessr.webp" width="1120" height="700" loading="lazy" alt="Open the live site: the ArtifactGuessr world map"></a>
                     <div>
                         <h3>ArtifactGuessr</h3>
-                        <p class="desc">A game built on The Met’s open collection: see a photo of an artifact, drop a pin where it was made, and pick when. I’m currently building a model that predicts an artifact’s location and time from its photo.</p>
-                        <p class="proj-meta">Game, Geospatial Data, Python, Computer Vision</p>
+                        <p class="desc">Like the daily game Anthropeum, but unlimited, built on The Met’s open collection: see a photo of an artifact, drop a pin where it was made, and pick when. I’m currently building a model that predicts an artifact’s location and time from its photo. I also track <a href="https://carterlagasse.github.io/anthropeum/" target="_blank" rel="noopener">my Anthropeum stats</a>.</p>
+                        <p class="proj-meta"> Computer Vision, Statistical analysis, Geospatial Data</p>
                     </div>
                     <div class="proj-links"><a href="https://carterlagasse.github.io/ArtifactGuessr/" target="_blank" rel="noopener">Live site</a><a href="https://github.com/CarterLagasse/ArtifactGuessr" target="_blank" rel="noopener">GitHub</a></div>
                 </div>
@@ -631,7 +631,7 @@ a:focus-visible {
         <section class="section terminal-band" id="terminal">
             <div class="section-inner">
                 <h2>Terminal</h2>
-                <p class="lead">Everything is a file. Click around, or type <b>help</b>.</p>
+                <p class="lead">Everything is a file. Explore my projects, or type <b>help</b>.</p>
                 <div class="terminal-wrap">
                 <div class="vscode">
                     <div class="term-bar">
